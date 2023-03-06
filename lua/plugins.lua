@@ -35,8 +35,8 @@ require("lazy").setup({
         },
         keymap = {
           builtin = {
-            ["<C-y>"] = "preview-page-up",
-            ["<C-e>"] = "preview-page-down",
+                ["<C-y>"] = "preview-page-up",
+                ["<C-e>"] = "preview-page-down",
           },
         },
       })
@@ -126,7 +126,7 @@ require("lazy").setup({
         if (lsp == "rust_analyzer")
         then
           opt["settings"] = {
-            ["rust_analyzer"] = {}
+                ["rust_analyzer"] = {}
           }
         end
 
@@ -155,14 +155,14 @@ require("lazy").setup({
         },
         mapping = cmp.mapping.preset.insert({
           -- C-b (back) C-f (forward) for snippet placeholder navigation.
-          ['<C-\\>'] = cmp.mapping.complete(),
-          ['<C-u>'] = cmp.mapping.scroll_docs( -4), -- Up
-          ['<C-d>'] = cmp.mapping.scroll_docs(4), -- Down
-          ['<CR>'] = cmp.mapping.confirm {
+              ['<C-\\>'] = cmp.mapping.complete(),
+              ['<C-u>'] = cmp.mapping.scroll_docs(-4), -- Up
+              ['<C-d>'] = cmp.mapping.scroll_docs(4),  -- Down
+              ['<CR>'] = cmp.mapping.confirm {
             behavior = cmp.ConfirmBehavior.Replace,
             select = true,
           },
-          ['<C-n>'] = cmp.mapping(function(fallback)
+              ['<C-n>'] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.select_next_item()
             elseif luasnip.expand_or_jumpable() then
@@ -173,16 +173,16 @@ require("lazy").setup({
               fallback()
             end
           end, { 'i', 's' }),
-          ['<C-p>'] = cmp.mapping(function(fallback)
+              ['<C-p>'] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.select_prev_item()
-            elseif luasnip.jumpable( -1) then
-              luasnip.jump( -1)
+            elseif luasnip.jumpable(-1) then
+              luasnip.jump(-1)
             else
               fallback()
             end
           end, { 'i', 's' }),
-          ['<C-e>'] = cmp.mapping.abort(),
+              ['<C-e>'] = cmp.mapping.abort(),
         }),
         sources = {
           { name = 'nvim_lsp' },
@@ -238,16 +238,30 @@ require("lazy").setup({
         end,
       })
     end
-
+  },
+  {
+    "windwp/nvim-autopairs",
+    config = function()
+      require('nvim-autopairs').setup({
+        disable_filetype = { "TelescopePrompt", "vim" },
+      })
+      -- If you want insert `(` after select function or method item
+      local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+      local cmp = require('cmp')
+      cmp.event:on(
+        'confirm_done',
+        cmp_autopairs.on_confirm_done()
+      )
+    end
   },
   {
     "kdheepak/lazygit.nvim",
     config = function()
       vim.keymap.set('n', '<C-g>', function() vim.cmd("LazyGit") end, { noremap = true, silent = true })
-      vim.g.lazygit_floating_window_winblend = 0 -- transparency of floating window
-      vim.g.lazygit_floating_window_scaling_factor = 0.86 -- scaling factor for floating window
+      vim.g.lazygit_floating_window_winblend = 0                          -- transparency of floating window
+      vim.g.lazygit_floating_window_scaling_factor = 0.86                 -- scaling factor for floating window
       vim.g.lazygit_floating_window_corner_chars = { '╭', '╮', '╰', '╯' } -- customize lazygit popup window corner characters
-      vim.g.lazygit_use_neovim_remote = 1 -- for neovim-remote support
+      vim.g.lazygit_use_neovim_remote = 1                                 -- for neovim-remote support
     end
   },
   {
@@ -383,7 +397,7 @@ require("lazy").setup({
           changedelete = { text = '~' },
           untracked    = { text = '┆' },
         },
-        signcolumn                   = true, -- Toggle with `:Gitsigns toggle_signs`
+        signcolumn                   = true,  -- Toggle with `:Gitsigns toggle_signs`
         numhl                        = false, -- Toggle with `:Gitsigns toggle_numhl`
         linehl                       = false, -- Toggle with `:Gitsigns toggle_linehl`
         word_diff                    = false, -- Toggle with `:Gitsigns toggle_word_diff`
@@ -402,7 +416,7 @@ require("lazy").setup({
         current_line_blame_formatter = '<author>, <author_time:%Y-%m-%d> - <summary>',
         sign_priority                = 6,
         update_debounce              = 100,
-        status_formatter             = nil, -- Use default
+        status_formatter             = nil,   -- Use default
         max_file_length              = 40000, -- Disable if file is longer than this (in lines)
         preview_config               = {
           -- Options passed to nvim_open_win
@@ -421,7 +435,7 @@ require("lazy").setup({
   },
   {
     "folke/tokyonight.nvim",
-    lazy = false, -- make sure we load this during startup if it is your main colorscheme
+    lazy = false,    -- make sure we load this during startup if it is your main colorscheme
     priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
       -- load the colorscheme here
@@ -434,7 +448,8 @@ require("lazy").setup({
     config = function()
       require('nvim-treesitter.configs').setup({
         -- A list of parser names, or "all" (the four listed parsers should always be installed)
-        ensure_installed = { "c", "lua", "vim", "help", "javascript", "typescript", "rust" },
+        ensure_installed = { "bash", "c", "css", "dockerfile", "gitignore", "help", "html", "javascript", "json", "lua",
+          "rust", "sql", "toml", "tsx", "typescript", "vim", "vue", "yaml" },
         -- Install parsers synchronously (only applied to `ensure_installed`)
         sync_install = false,
         -- Automatically install missing parsers when entering buffer
@@ -448,7 +463,6 @@ require("lazy").setup({
 
         highlight = {
           enable = true,
-
           -- NOTE: these are the names of the parsers and not the filetype. (for example if you want to
           -- disable highlighting for the `tex` filetype, you need to include `latex` in this list as this is
           -- the name of the parser)
@@ -462,13 +476,16 @@ require("lazy").setup({
               return true
             end
           end,
-
           -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
           -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
           -- Using this option may slow down your editor, and you may see some duplicate highlights.
           -- Instead of true it can also be a list of languages
           additional_vim_regex_highlighting = false,
         },
+        autotag = {
+          enable = true,
+          filetypes = { "html", "xml" },
+        }
       })
     end,
   },

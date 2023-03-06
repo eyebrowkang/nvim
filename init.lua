@@ -43,7 +43,8 @@ vim.o.listchars = "tab:▸ ,trail:▫"
 -- vim.g.colors_name = "slate"
 
 -- basic keymaps
-local nv_mode = { 'n', 'v' };
+local n_mode = { 'n' };
+-- local nv_mode = { 'n', 'v' };
 local nvo_mode = { 'n', 'v', 'o' };
 local ns_opts = { noremap = true, silent = true };
 
@@ -79,41 +80,41 @@ vim.keymap.set('', '<LEADER>u', '<C-w>k')
 vim.keymap.set('', '<LEADER>e', '<C-w>j')
 vim.keymap.set('', '<LEADER>n', '<C-w>h')
 vim.keymap.set('', '<LEADER>i', '<C-w>l')
-vim.keymap.set(nv_mode, 's', '<nop>')
-vim.keymap.set(nv_mode, 'su', function()
+vim.keymap.set(n_mode, 's', '<nop>')
+vim.keymap.set(n_mode, 'su', function()
   vim.o.splitbelow = false
   vim.cmd("split")
   vim.o.splitbelow = true
 end)
-vim.keymap.set(nv_mode, 'se', function()
+vim.keymap.set(n_mode, 'se', function()
   vim.o.splitbelow = true
   vim.cmd("split")
 end)
-vim.keymap.set(nv_mode, 'sn', function()
+vim.keymap.set(n_mode, 'sn', function()
   vim.o.splitright = false
   vim.cmd("vsplit")
   vim.o.splitright = ture
 end)
-vim.keymap.set(nv_mode, 'si', function()
+vim.keymap.set(n_mode, 'si', function()
   vim.o.splitright = ture
   vim.cmd("vsplit")
 end)
-vim.keymap.set('n', 'sh', '<C-w>t<C-w>K', ns_opts)
-vim.keymap.set('n', 'sv', '<C-w>t<C-w>H', ns_opts)
-vim.keymap.set('n', 'srh', '<C-w>b<C-w>K', ns_opts)
-vim.keymap.set('n', 'srv', '<C-w>b<C-w>H', ns_opts)
-vim.keymap.set('', '<up>', function() vim.cmd("res +5") end)
-vim.keymap.set('', '<down>', function() vim.cmd("res -5") end)
-vim.keymap.set('', '<left>', function() vim.cmd("vertical resize-5") end)
-vim.keymap.set('', '<right>', function() vim.cmd("vertical resize+5") end)
+vim.keymap.set(n_mode, 'sh', '<C-w>t<C-w>K', ns_opts)
+vim.keymap.set(n_mode, 'sv', '<C-w>t<C-w>H', ns_opts)
+vim.keymap.set(n_mode, 'srh', '<C-w>b<C-w>K', ns_opts)
+vim.keymap.set(n_mode, 'srv', '<C-w>b<C-w>H', ns_opts)
+vim.keymap.set(n_mode, '<up>', function() vim.cmd("res +5") end)
+vim.keymap.set(n_mode, '<down>', function() vim.cmd("res -5") end)
+vim.keymap.set(n_mode, '<left>', function() vim.cmd("vertical resize-5") end)
+vim.keymap.set(n_mode, '<right>', function() vim.cmd("vertical resize+5") end)
 
 -- tab management
-vim.keymap.set(nv_mode, 'tu', function() vim.cmd("tabe") end)
-vim.keymap.set(nv_mode, 'te', '<C-w>T')
-vim.keymap.set(nv_mode, 'tn', function() vim.cmd("-tabnext") end)
-vim.keymap.set(nv_mode, 'ti', function() vim.cmd("+tabnext") end)
-vim.keymap.set(nv_mode, 'tmn', function() vim.cmd("-tabmove") end)
-vim.keymap.set(nv_mode, 'tmi', function() vim.cmd("+tabmove") end)
+vim.keymap.set(n_mode, 'tu', function() vim.cmd("tabe") end)
+vim.keymap.set(n_mode, 'te', '<C-w>T')
+vim.keymap.set(n_mode, 'tn', function() vim.cmd("-tabnext") end)
+vim.keymap.set(n_mode, 'ti', function() vim.cmd("+tabnext") end)
+vim.keymap.set(n_mode, 'tmn', function() vim.cmd("-tabmove") end)
+vim.keymap.set(n_mode, 'tmi', function() vim.cmd("+tabmove") end)
 
 -- terminal management
 -- just use :te, it is easy enough
