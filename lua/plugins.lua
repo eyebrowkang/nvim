@@ -18,6 +18,7 @@ local servers = {
   "html",
   "jsonls",
   "lua_ls",
+  "prismals",
   "rust_analyzer",
   "tsserver",
   "volar",
