@@ -40,8 +40,6 @@ vim.o.statusline = "%f %m%r %y - %l/%L %p%%"
 vim.o.wildignore = "log/**,node_modules/**,target/**,tmp/**,*.rbc"
 vim.o.listchars = "tab:▸ ,trail:▫"
 
--- vim.g.colors_name = "slate"
-
 -- basic keymaps
 local n_mode = { 'n' };
 -- local nv_mode = { 'n', 'v' };
@@ -72,7 +70,11 @@ vim.keymap.set('n', '<C-j>', '<esc>viw~e', ns_opts)
 vim.g.mapleader = " "
 
 -- neovim config file management
-vim.keymap.set('', '<LEADER>ve', function() vim.cmd("vsplit $MYVIMRC") end)
+vim.keymap.set('', '<LEADER>ve', function()
+  vim.cmd("vsplit $MYVIMRC")
+  vim.cmd("lcd %:p:h")
+  vim.cmd("pwd")
+end)
 vim.keymap.set('', '<LEADER>vs', function() vim.cmd("source $MYVIMRC") end)
 
 -- window management
@@ -116,11 +118,13 @@ vim.keymap.set(n_mode, 'ti', function() vim.cmd("+tabnext") end)
 vim.keymap.set(n_mode, 'tmn', function() vim.cmd("-tabmove") end)
 vim.keymap.set(n_mode, 'tmi', function() vim.cmd("+tabmove") end)
 
--- terminal management
--- just use :te, it is easy enough
--- vim.keymap.set('', '<LEADER>t', function() vim.cmd("terminal") end)
--- vim.keymap.set('t', '<esc>', '<C-\\><C-n>')
+-- cd current file
+vim.keymap.set('', '<LEADER>cd', function()
+  vim.cmd("cd %:p:h")
+  vim.cmd("pwd")
+end)
 
+-- restore the cursor to last leaving position
 vim.api.nvim_create_autocmd({ "BufReadPost" }, {
   pattern = "*",
   callback = function()

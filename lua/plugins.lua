@@ -36,8 +36,8 @@ require("lazy").setup({
         },
         keymap = {
           builtin = {
-                ["<C-y>"] = "preview-page-up",
-                ["<C-e>"] = "preview-page-down",
+            ["<C-y>"] = "preview-page-up",
+            ["<C-e>"] = "preview-page-down",
           },
         },
       })
@@ -57,7 +57,12 @@ require("lazy").setup({
     -- follow latest release.
     version = "1.2.*",
     -- install jsregexp (optional!).
-    build = "make install_jsregexp"
+    build = "make install_jsregexp",
+    config = function(_, opts)
+      if opts then require("luasnip").config.setup(opts) end
+      vim.tbl_map(function(type) require("luasnip.loaders.from_" .. type).lazy_load() end,
+        { "vscode", "snipmate", "lua" })
+    end
   },
   {
     "neovim/nvim-lspconfig",
@@ -127,7 +132,7 @@ require("lazy").setup({
         if (lsp == "rust_analyzer")
         then
           opt["settings"] = {
-                ["rust_analyzer"] = {}
+            ["rust_analyzer"] = {}
           }
         end
 
@@ -156,14 +161,14 @@ require("lazy").setup({
         },
         mapping = cmp.mapping.preset.insert({
           -- C-b (back) C-f (forward) for snippet placeholder navigation.
-              ['<C-\\>'] = cmp.mapping.complete(),
-              ['<C-u>'] = cmp.mapping.scroll_docs(-4), -- Up
-              ['<C-d>'] = cmp.mapping.scroll_docs(4),  -- Down
-              ['<CR>'] = cmp.mapping.confirm {
+          ['<C-\\>'] = cmp.mapping.complete(),
+          ['<C-u>'] = cmp.mapping.scroll_docs(-4), -- Up
+          ['<C-d>'] = cmp.mapping.scroll_docs(4),  -- Down
+          ['<CR>'] = cmp.mapping.confirm {
             behavior = cmp.ConfirmBehavior.Replace,
             select = true,
           },
-              ['<C-n>'] = cmp.mapping(function(fallback)
+          ['<C-n>'] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.select_next_item()
             elseif luasnip.expand_or_jumpable() then
@@ -174,7 +179,7 @@ require("lazy").setup({
               fallback()
             end
           end, { 'i', 's' }),
-              ['<C-p>'] = cmp.mapping(function(fallback)
+          ['<C-p>'] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.select_prev_item()
             elseif luasnip.jumpable(-1) then
@@ -183,7 +188,7 @@ require("lazy").setup({
               fallback()
             end
           end, { 'i', 's' }),
-              ['<C-e>'] = cmp.mapping.abort(),
+          ['<C-e>'] = cmp.mapping.abort(),
         }),
         sources = {
           { name = 'nvim_lsp' },
@@ -197,12 +202,12 @@ require("lazy").setup({
           format = function(entry, vim_item)
             -- Source
             vim_item.menu = ({
-                  buffer = "[Buffer]",
-                  nvim_lsp = "[LSP]",
-                  luasnip = "[LuaSnip]",
-                  nvim_lua = "[Lua]",
-                  latex_symbols = "[LaTeX]",
-                })[entry.source.name]
+              buffer = "[Buffer]",
+              nvim_lsp = "[LSP]",
+              luasnip = "[LuaSnip]",
+              nvim_lua = "[Lua]",
+              latex_symbols = "[LaTeX]",
+            })[entry.source.name]
             return vim_item
           end
         },
@@ -349,10 +354,11 @@ require("lazy").setup({
         },
       })
 
-      vim.keymap.set('n', 'tt', function() vim.cmd("NvimTreeToggle") end)
-      vim.keymap.set('n', 'to', function() vim.cmd("NvimTreeFocus") end)
-      vim.keymap.set('n', 'tf', function() vim.cmd("NvimTreeFindFile") end)
       vim.keymap.set('n', 'tc', function() vim.cmd("NvimTreeCollapse") end)
+      vim.keymap.set('n', 'tf', function() vim.cmd("NvimTreeFindFileToggle") end)
+      vim.keymap.set('n', 'to', function() vim.cmd("NvimTreeFocus") end)
+      vim.keymap.set('n', 'tt', function() vim.cmd("NvimTreeToggle") end)
+      vim.keymap.set('n', 'tr', function() vim.cmd("NvimTreeRefresh") end)
     end,
   },
   {
@@ -535,14 +541,19 @@ require("lazy").setup({
       })
     end,
   },
+  {
+    "stevearc/aerial.nvim",
+    config = function()
+      require('aerial').setup({
+        -- You probably also want to set a keymap to toggle aerial
+        -- optionally use on_attach to set keymaps when aerial has attached to a buffer
+        on_attach = function(bufnr)
+          -- Jump forwards/backwards with '{' and '}'
+          vim.keymap.set('n', '{', '<cmd>AerialPrev<CR>', { buffer = bufnr })
+          vim.keymap.set('n', '}', '<cmd>AerialNext<CR>', { buffer = bufnr })
+        end
+      })
+      vim.keymap.set('n', 'ta', '<cmd>AerialToggle!<CR>')
+    end,
+  },
 })
-
---[[
-    component_separators = { left = '', right = '' },
-    section_separators = { left = '', right = ''},
-
-    'typescript',
-    'javascript',
-    'javascriptreact',
-    'typescriptreact',
-    --]]
