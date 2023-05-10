@@ -3,7 +3,7 @@ return {
   "cmake",
   "cssls",
   "cssmodules_ls",
-  "docker_compose_language_service",
+  -- "docker_compose_language_service",
   "dockerls",
   "eslint",
   "golangci_lint_ls",
@@ -20,5 +20,5 @@ return {
   "tsserver",
   "vimls",
   "volar",
-  "yamlls",
+  -- "yamlls",
 }
