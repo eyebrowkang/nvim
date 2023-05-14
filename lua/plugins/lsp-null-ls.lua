@@ -7,11 +7,17 @@ return {
 
     null_ls.setup({
       sources = {
+        null_ls.builtins.code_actions.eslint_d,
+        null_ls.builtins.completion.luasnip,
+        null_ls.builtins.diagnostics.dotenv_linter,
+        null_ls.builtins.diagnostics.editorconfig_checker,
+        null_ls.builtins.diagnostics.eslint_d,
+        null_ls.builtins.diagnostics.jsonlint,
+        null_ls.builtins.diagnostics.stylelint,
+        null_ls.builtins.formatting.eslint_d,
+        null_ls.builtins.formatting.fixjson,
+        null_ls.builtins.formatting.prettierd,
         null_ls.builtins.formatting.stylua,
-        null_ls.builtins.diagnostics.eslint,
-        null_ls.builtins.code_actions.eslint,
-        null_ls.builtins.completion.spell,
-        null_ls.builtins.completion.luasnip
       },
       on_attach = function(client, bufnr)
         if client.supports_method("textDocument/formatting") then
@@ -24,7 +30,6 @@ return {
             end,
           })
         end
-        vim.keymap.set('n', '<LEADER>lq', function() vim.lsp.buf.format { async = true } end, bufopts)
       end,
     })
   end
