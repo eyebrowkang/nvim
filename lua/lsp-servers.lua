@@ -4,6 +4,7 @@ return {
   "cssls",
   "cssmodules_ls",
   "dockerls",
+  "eslint",
   "gopls",
   "html",
   "jsonls",
