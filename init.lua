@@ -34,8 +34,6 @@ vim.cmd("syntax enable")
 vim.o.ignorecase = true
 vim.o.smartcase = true
 
--- vim.o.laststatus = 2
--- vim.o.statusline = "%f %m%r %y - %l/%L %p%%"
 vim.o.cmdheight = 0
 
 vim.o.wildignore = "log/**,node_modules/**,target/**,tmp/**,*.rbc"

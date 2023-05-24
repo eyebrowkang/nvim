@@ -156,7 +156,6 @@ return {
         then
           opt["filetypes"] = {
             'vue',
-            'json',
           }
         end
 
