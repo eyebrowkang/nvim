@@ -21,9 +21,13 @@ return {
             print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
           end, opts)
           vim.keymap.set('n', '<LEADER>D', vim.lsp.buf.type_definition, opts)
-          vim.keymap.set('n', '<LEADER>rn', vim.lsp.buf.rename, opts)
+          -- vim.keymap.set('n', '<LEADER>rn', vim.lsp.buf.rename, opts)
           vim.keymap.set({ 'n', 'v' }, '<LEADER>ca', vim.lsp.buf.code_action, opts)
           vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+
+          vim.keymap.set('n', '<LEADER>ft', function()
+            vim.lsp.buf.format()
+          end, opts)
         end,
       })
     end
@@ -171,6 +175,23 @@ return {
               command = "EslintFixAll",
             })
           end
+        end
+
+        if (lsp == "lua_ls")
+        then
+          opt["settings"] = {
+            Lua = {
+              format = {
+                enable = true,
+                -- Put format options here
+                -- NOTE: the value should be STRING!!
+                defaultConfig = {
+                  indent_style = "space",
+                  indent_size = "2",
+                }
+              },
+            }
+          }
         end
 
         lsp_config[lsp].setup(opt)
