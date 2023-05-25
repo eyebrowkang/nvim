@@ -20,12 +20,12 @@ return {
           vim.keymap.set('n', '<LEADER>wl', function()
             print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
           end, opts)
-          vim.keymap.set('n', '<LEADER>D', vim.lsp.buf.type_definition, opts)
+          vim.keymap.set('n', '<LEADER>qD', vim.lsp.buf.type_definition, opts)
           -- vim.keymap.set('n', '<LEADER>rn', vim.lsp.buf.rename, opts)
-          vim.keymap.set({ 'n', 'v' }, '<LEADER>ca', vim.lsp.buf.code_action, opts)
-          vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+          -- vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
 
-          vim.keymap.set('n', '<LEADER>ft', function()
+          vim.keymap.set({ 'n', 'v' }, '<LEADER>qa', vim.lsp.buf.code_action, opts)
+          vim.keymap.set('n', '<LEADER>qm', function()
             vim.lsp.buf.format()
           end, opts)
         end,
@@ -147,6 +147,19 @@ return {
       local lsp_config = require('lspconfig')
       local servers = require("../lsp-servers")
 
+      local auto_format = function(client, bufnr)
+        if client.supports_method("textDocument/formatting") then
+          vim.api.nvim_clear_autocmds({ group = "LspFormatting", buffer = bufnr })
+          vim.api.nvim_create_autocmd("BufWritePre", {
+            group = augroup,
+            buffer = bufnr,
+            callback = function()
+              vim.lsp.buf.format({ bufnr = bufnr })
+            end,
+          })
+        end
+      end
+
       for _, lsp in ipairs(servers) do
         local opt = {
           capabilities = capabilities,
@@ -156,6 +169,11 @@ return {
         then
           opt["filetypes"] = {
             'vue',
+          }
+          opt["init_options"] = {
+            typescript = {
+              tsdk = os.getenv("HOME") .. "/.volta/tools/shared/typescript/lib",
+            },
           }
         end
 
@@ -191,6 +209,16 @@ return {
               },
             }
           }
+          opt["on_attach"] = function(client, bufnr)
+            auto_format(client, bufnr)
+          end
+        end
+
+        if (lsp == "taplo")
+        then
+          opt["on_attach"] = function(client, bufnr)
+            auto_format(client, bufnr)
+          end
         end
 
         lsp_config[lsp].setup(opt)

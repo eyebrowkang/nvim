@@ -26,10 +26,10 @@ return {
       end, { expr = true })
 
       -- Actions
-      map('n', '<leader>hd', gs.diffthis)
-      map('n', '<leader>hD', function() gs.diffthis('~') end)
-      map({ 'n', 'v' }, '<leader>hb', gs.toggle_current_line_blame)
-      map('n', '<leader>hp', gs.preview_hunk)
+      map('n', '<leader>dd', gs.diffthis)
+      map('n', '<leader>dD', function() gs.diffthis('~') end)
+      map({ 'n', 'v' }, '<leader>db', gs.toggle_current_line_blame)
+      map('n', '<leader>dh', gs.preview_hunk)
     end
 
     gitsigns.setup({

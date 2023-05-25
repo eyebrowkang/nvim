@@ -19,6 +19,6 @@ return {
     vim.keymap.set('n', '<LEADER>fg', builtin.live_grep, {})
     vim.keymap.set('n', '<LEADER>fb', builtin.buffers, {})
     vim.keymap.set('n', '<LEADER>fh', builtin.help_tags, {})
-    vim.keymap.set('n', '<LEADER>fl', function() vim.cmd("FzfLua") end)
+    vim.keymap.set('n', '<LEADER>fc', function() vim.cmd("FzfLua") end)
   end,
 }

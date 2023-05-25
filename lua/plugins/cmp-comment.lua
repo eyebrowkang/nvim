@@ -11,16 +11,18 @@ return {
       ---LHS of toggle mappings in NORMAL mode
       toggler = {
         ---Line-comment toggle keymap
-        line = '<LEADER>cc',
+        -- line = '<LEADER>cc',
+        line = '<A-/>',
         ---Block-comment toggle keymap
-        block = '<LEADER>bc',
+        -- block = '<LEADER>bc',
+        block = '<A-S-/>',
       },
       ---LHS of operator-pending mappings in NORMAL and VISUAL mode
       opleader = {
         ---Line-comment keymap
-        line = '<LEADER>c',
+        line = '<A-/>',
         ---Block-comment keymap
-        block = '<LEADER>b',
+        block = '<A-S-/>',
       },
       ---LHS of extra mappings
       extra = {

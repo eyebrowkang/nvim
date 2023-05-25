@@ -2,7 +2,7 @@ return {
   "windwp/nvim-autopairs",
   config = function()
     require('nvim-autopairs').setup({
-      disable_filetype = { "TelescopePrompt", "vim" },
+      disable_filetype = { "vim" },
     })
     local cmp_autopairs = require('nvim-autopairs.completion.cmp')
     local cmp = require('cmp')

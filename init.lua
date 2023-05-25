@@ -35,6 +35,8 @@ vim.o.ignorecase = true
 vim.o.smartcase = true
 
 vim.o.cmdheight = 0
+-- set termguicolors to enable highlight groups
+vim.opt.termguicolors = true
 
 vim.o.wildignore = "log/**,node_modules/**,target/**,tmp/**,*.rbc"
 vim.o.listchars = "tab:▸ ,trail:▫"
@@ -69,12 +71,11 @@ vim.keymap.set('n', '<C-j>', '<esc>viw~e', ns_opts)
 vim.g.mapleader = " "
 
 -- neovim config file management
-vim.keymap.set('', '<LEADER>ve', function()
+vim.keymap.set('', '<LEADER>v', function()
   vim.cmd("vsplit $MYVIMRC")
   vim.cmd("lcd %:p:h")
   vim.cmd("pwd")
 end)
-vim.keymap.set('', '<LEADER>vs', function() vim.cmd("source $MYVIMRC") end)
 
 -- window management
 vim.keymap.set('', '<LEADER>u', '<C-w>k')
