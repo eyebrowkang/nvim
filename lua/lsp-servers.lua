@@ -15,6 +15,7 @@ return {
   "rust_analyzer",
   "sqlls",
   "stylelint_lsp",
+  "tailwindcss",
   "taplo",
   "tsserver",
   "vimls",
