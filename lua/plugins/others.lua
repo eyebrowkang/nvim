@@ -31,5 +31,6 @@ return {
         keep_quiet_on_no_binary = false
       }
     end
-  }
+  },
+  "mtdl9/vim-log-highlighting"
 }
