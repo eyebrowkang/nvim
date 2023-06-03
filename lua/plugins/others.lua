@@ -2,6 +2,18 @@ return {
   "fladson/vim-kitty",
   {
     "keaising/im-select.nvim",
+    enabled = function()
+      local function trim(s)
+        return s:match("^%s*(.-)%s*$")
+      end
+      local handle = io.popen("uname -s")
+      if handle then
+        local osName = handle:read("*a")
+        handle:close()
+        return trim(osName) == "Darwin"
+      end
+      return false
+    end,
     config = function()
       require('im_select').setup {
 
