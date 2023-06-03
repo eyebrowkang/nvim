@@ -68,6 +68,8 @@ vim.keymap.set('i', '<C-a>', '<esc>A', ns_opts)
 vim.keymap.set('i', '<C-j>', '<esc>viw~ea', ns_opts)
 vim.keymap.set('n', '<C-j>', '<esc>viw~e', ns_opts)
 
+vim.keymap.set(n_mode, '<CR>', 'ciw')
+
 vim.g.mapleader = " "
 
 -- neovim config file management
