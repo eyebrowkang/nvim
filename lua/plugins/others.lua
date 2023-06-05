@@ -44,5 +44,10 @@ return {
       }
     end
   },
-  "mtdl9/vim-log-highlighting"
+  "mtdl9/vim-log-highlighting",
+  {
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {},
+  },
 }
