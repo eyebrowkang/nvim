@@ -21,5 +21,17 @@ return {
     vim.keymap.set("n", "<leader>qr", "<cmd>TroubleToggle lsp_references<cr>",
       { silent = true, noremap = true }
     )
+    vim.keymap.set("n", "<leader>qD", "<cmd>TroubleToggle lsp_type_definitions<cr>",
+      { silent = true, noremap = true }
+    )
+    vim.keymap.set("n", "<leader>qi", "<cmd>TroubleToggle lsp_implementations<cr>",
+      { silent = true, noremap = true }
+    )
+    vim.keymap.set("n", "<leader>qo", "<cmd>TroubleToggle todo<cr>",
+      { silent = true, noremap = true }
+    )
+    vim.keymap.set("n", "gd", "<cmd>TroubleToggle lsp_definitions<cr>",
+      { silent = true, noremap = true }
+    )
   end,
 }
