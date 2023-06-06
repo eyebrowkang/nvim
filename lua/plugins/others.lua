@@ -50,4 +50,5 @@ return {
     dependencies = { "nvim-lua/plenary.nvim" },
     opts = {},
   },
+  "github/copilot.vim",
 }
