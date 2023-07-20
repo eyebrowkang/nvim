@@ -64,7 +64,8 @@ vim.keymap.set(nvo_mode, 'E', '5j', ns_opts)
 vim.keymap.set(nvo_mode, 'S', ':w<cr>', ns_opts)
 vim.keymap.set(nvo_mode, 'Q', ':q<cr>', ns_opts)
 vim.keymap.set('v', 'Y', '"+y', ns_opts)
-vim.keymap.set('i', '<C-a>', '<esc>A', ns_opts)
+vim.keymap.set('i', '<C-a>', '<esc>I', ns_opts)
+vim.keymap.set('i', '<C-e>', '<esc>A', ns_opts)
 vim.keymap.set('i', '<C-j>', '<esc>viw~ea', ns_opts)
 vim.keymap.set('n', '<C-j>', '<esc>viw~e', ns_opts)
 
@@ -113,12 +114,19 @@ vim.keymap.set(n_mode, '<left>', function() vim.cmd("vertical resize-5") end)
 vim.keymap.set(n_mode, '<right>', function() vim.cmd("vertical resize+5") end)
 
 -- tab management
-vim.keymap.set(n_mode, 'tu', function() vim.cmd("tabe") end)
+vim.keymap.set(n_mode, 'tu', function() vim.cmd("tabnew") end)
 vim.keymap.set(n_mode, 'te', '<C-w>T')
-vim.keymap.set(n_mode, 'tn', function() vim.cmd("-tabnext") end)
-vim.keymap.set(n_mode, 'ti', function() vim.cmd("+tabnext") end)
-vim.keymap.set(n_mode, 'tmn', function() vim.cmd("-tabmove") end)
-vim.keymap.set(n_mode, 'tmi', function() vim.cmd("+tabmove") end)
+vim.keymap.set(n_mode, 'tn', function() vim.cmd("tabprevious") end)
+vim.keymap.set(n_mode, 'ti', function()
+  local count = vim.api.nvim_get_vvar('count') -- 获取count的值
+  if count == 0 then
+    vim.cmd("tabnext")                         -- 如果没有给出count，那么切换到下一个标签页
+  else
+    vim.cmd(count .. "tabnext")                -- 如果给出了count，那么切换到第count个标签页
+  end
+end)
+vim.keymap.set(n_mode, 'tmn', function() vim.cmd("tabmove -") end)
+vim.keymap.set(n_mode, 'tmi', function() vim.cmd("tabmove +") end)
 
 -- cd current file
 vim.keymap.set('', '<LEADER>cd', function()
