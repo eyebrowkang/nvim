@@ -175,16 +175,12 @@ return {
               tsdk = os.getenv("HOME") .. "/.volta/tools/shared/typescript/lib",
             },
           }
-        end
-
-        if (lsp == "rust_analyzer")
+        elseif (lsp == "rust_analyzer")
         then
           opt["settings"] = {
             ["rust_analyzer"] = {}
           }
-        end
-
-        if (lsp == "eslint")
+        elseif (lsp == "eslint")
         then
           opt["on_attach"] = function(client, bufnr)
             vim.api.nvim_create_autocmd("BufWritePre", {
@@ -192,9 +188,7 @@ return {
               command = "EslintFixAll",
             })
           end
-        end
-
-        if (lsp == "lua_ls")
+        elseif (lsp == "lua_ls")
         then
           opt["settings"] = {
             Lua = {
@@ -212,9 +206,14 @@ return {
           opt["on_attach"] = function(client, bufnr)
             auto_format(client, bufnr)
           end
-        end
-
-        if (lsp == "taplo")
+        elseif (lsp == "denols")
+        then
+          opt["root_dir"] = lsp_config.util.root_pattern("deno.json", "deno.jsonc")
+          opt["single_file_support"] = false
+        elseif (lsp == "tsserver")
+        then
+          opt["root_dir"] = lsp_config.util.root_pattern("package.json")
+        elseif (lsp == "taplo")
         then
           opt["on_attach"] = function(client, bufnr)
             auto_format(client, bufnr)

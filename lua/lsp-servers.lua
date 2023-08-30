@@ -3,6 +3,7 @@ return {
   "cmake",
   "cssls",
   "cssmodules_ls",
+  "denols",
   "dockerls",
   "eslint",
   "gopls",

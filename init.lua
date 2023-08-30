@@ -146,6 +146,10 @@ vim.api.nvim_create_autocmd({ "BufReadPost" }, {
   end,
 })
 
+vim.g.markdown_fenced_languages = {
+  "ts=typescript"
+}
+
 -- plugins
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
