@@ -1,17 +1,3 @@
-local icons = {
-    diagnostics = {
-        Error = " ",
-        Warn  = " ",
-        Hint  = " ",
-        Info  = " ",
-    },
-    git = {
-        added    = " ",
-        modified = " ",
-        removed  = " ",
-    },
-}
-
 local function nofile()
     return #vim.fn.argv() ~= 0 or #vim.fn.getbufinfo({buflisted = 1}) ~= 1
 end
@@ -22,17 +8,29 @@ return {
         version = "*",
         dependencies = 'nvim-tree/nvim-web-devicons',
         event = "VeryLazy",
-        enabled = nofile(),
+        cond = nofile(),
         opts = {
             options = {
-                diagnostics = "nvim_lsp",
                 mode = "tabs",
                 separator_style = "slant",
-            }
+                always_show_bufferline = false,
+                diagnostics = "nvim_lsp",
+                diagnostics_indicator = function(_, _, diag)
+                    local icons = require("config.icons").diagnostics
+                    local ret = (diag.error and icons.Error .. diag.error .. " " or "")
+                    .. (diag.warning and icons.Warn .. diag.warning or "")
+                    return vim.trim(ret)
+                end,
+                --[[ offsets = {
+                    {
+                        filetype = "neo-tree",
+                        text = "Neo-tree",
+                        highlight = "Directory",
+                        text_align = "left",
+                    },
+                }, ]]
+            },
         },
-        config = function(_, opts)
-            require("bufferline").setup(opts)
-        end
     },
     {
         "nvim-lualine/lualine.nvim",
@@ -41,7 +39,7 @@ return {
             'nvim-tree/nvim-web-devicons'
         },
         event = "VeryLazy",
-        enabled = function()
+        cond = function()
             return nofile()
         end,
         opts = function()
@@ -58,9 +56,9 @@ return {
                 },
                 sections = {
                     lualine_a = {
-                        { 'branch', separator = { left = '' } },
+                        { 'mode', separator = { left = '' } }
                     },
-                    lualine_b = {},
+                    lualine_b = { 'branch' },
                     lualine_z = {
                         { 'location', separator = { right = '' } },
                     },

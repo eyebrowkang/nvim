@@ -22,7 +22,7 @@ set sidescrolloff=5
 set list
 set listchars=tab:▸\ ,trail:▫,nbsp:␣,precedes:«,extends:» " eol:⏎
 set showcmd
-set showmode
+set noshowmode
 set showmatch
 set matchtime=1
 set nowrap
