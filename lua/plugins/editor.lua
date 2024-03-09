@@ -152,4 +152,99 @@ return {
             { "<leader>fh", function() require('telescope.builtin').help_tags() end, desc = "Show help tags (Telescope)" },
         },
     },
+
+    -- Terminal Integration
+    {
+        'akinsho/toggleterm.nvim',
+        version = "*",
+        opts = {
+            size = function(term)
+                if term.direction == "horizontal" then
+                    return 15
+                elseif term.direction == "vertical" then
+                    return vim.o.columns * 0.4
+                end
+            end,
+            shell = '/usr/bin/zsh',
+            float_opts = {
+                border = 'curved'
+            },
+        },
+        keys = {
+            { "<leader>tt", function() require('toggleterm').toggle() end, desc = "Open Terminal (Toggleterm)"},
+            { "<leader>th", function() require('toggleterm').toggle(nil, nil, nil, 'horizontal', nil) end, desc = "Open Horizontal Terminal (Toggleterm)"},
+            { "<leader>tv", function() require('toggleterm').toggle(nil, nil, nil, 'vertical', nil) end, desc = "Open Vertical Terminal (Toggleterm)"},
+            { "<leader>tf", function() require('toggleterm').toggle(nil, nil, nil, 'float', nil) end, desc = "Open Float Terminal (Toggleterm)"},
+            {
+                "<leader>tg",
+                function()
+                    local lazygit = require('toggleterm.terminal').Terminal:new({
+                        cmd = "lazygit",
+                        dir = "git_dir",
+                        direction = "float",
+                        -- function to run on opening the terminal
+                        on_open = function(term)
+                            vim.cmd("startinsert!")
+                            vim.api.nvim_buf_set_keymap(term.bufnr, "n", "q", "<cmd>close<CR>", {noremap = true, silent = true})
+                        end,
+                        -- function to run on closing the terminal
+                        on_close = function(term)
+                            vim.cmd("startinsert!")
+                        end,
+                    })
+
+                    lazygit:toggle()
+                end,
+                desc = "Lazygit (Toggleterm)",
+                noremap = true,
+                silent = true,
+            },
+        },
+    },
+
+    -- Automatically highlights other instances of the word under your cursor.
+    -- This works with LSP, Treesitter, and regexp matching to find the other
+    -- instances.
+    {
+        "RRethy/vim-illuminate",
+        -- event = "LazyFile",
+        opts = {
+            -- providers: provider used to get references in the buffer, ordered by priority
+            providers = {
+                'lsp',
+                'treesitter',
+                'regex',
+            },
+            delay = 200,
+            large_file_cutoff = 2000,
+            large_file_overrides = {
+                providers = { "lsp" },
+            },
+        },
+        config = function(_, opts)
+            require("illuminate").configure(opts)
+
+            -- local function map(key, dir, buffer)
+            --     vim.keymap.set("n", key, function()
+            --         require("illuminate")["goto_" .. dir .. "_reference"](false)
+            --     end, { desc = dir:sub(1, 1):upper() .. dir:sub(2) .. " Reference", buffer = buffer })
+            -- end
+            --
+            -- map("]]", "next")
+            -- map("[[", "prev")
+        --
+        --     -- also set it after loading ftplugins, since a lot overwrite [[ and ]]
+        --     vim.api.nvim_create_autocmd("FileType", {
+        --         callback = function()
+        --             local buffer = vim.api.nvim_get_current_buf()
+        --             map("]]", "next", buffer)
+        --             map("[[", "prev", buffer)
+        --         end,
+        --     })
+        end,
+        -- keys = {
+        --     { "]]", desc = "Next Reference" },
+        --     { "[[", desc = "Prev Reference" },
+        -- },
+    },
 }
