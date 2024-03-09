@@ -41,6 +41,7 @@ return {
                 end,
                 desc = "Git explorer",
             },
+            { "<leader>ge", "<leader>eg", desc = "Git explorer", remap = true },
             {
                 "<leader>eb",
                 function()
@@ -48,6 +49,7 @@ return {
                 end,
                 desc = "Buffer explorer",
             },
+            { "<leader>be", "<leader>eb", desc = "Buffer explorer", remap = true },
         },
         opts = {
             close_if_last_window = true,
@@ -147,8 +149,9 @@ return {
         dependencies = { 'nvim-lua/plenary.nvim' },
         keys = {
             { "<leader>ff", function() require('telescope.builtin').find_files() end, desc = "Find files (Telescope)" },
-            { "<leader>fs", function() require('telescope.builtin').live_grep() end, desc = "Grep in files (Telescope)" },
-            { "<leader>fb", function() require('telescope.builtin').buffers() end, desc = "Show buffers (Telescope)" },
+            { "<leader>fs", function() require('telescope.builtin').live_grep() end, desc = "Search/Grep in files (Telescope)" },
+            { "<leader>fb", function() require('telescope.builtin').buffers() end, desc = "Find buffers (Telescope)" },
+            { "<leader>bf", "<leader>fb", desc = "Find buffers (Telescope)", remap = true },
             { "<leader>fh", function() require('telescope.builtin').help_tags() end, desc = "Show help tags (Telescope)" },
         },
     },
@@ -176,7 +179,7 @@ return {
             { "<leader>tv", function() require('toggleterm').toggle(nil, nil, nil, 'vertical', nil) end, desc = "Open Vertical Terminal (Toggleterm)"},
             { "<leader>tf", function() require('toggleterm').toggle(nil, nil, nil, 'float', nil) end, desc = "Open Float Terminal (Toggleterm)"},
             {
-                "<leader>tg",
+                "<leader>tlg",
                 function()
                     local lazygit = require('toggleterm.terminal').Terminal:new({
                         cmd = "lazygit",
@@ -188,7 +191,7 @@ return {
                             vim.api.nvim_buf_set_keymap(term.bufnr, "n", "q", "<cmd>close<CR>", {noremap = true, silent = true})
                         end,
                         -- function to run on closing the terminal
-                        on_close = function(term)
+                        on_close = function()
                             vim.cmd("startinsert!")
                         end,
                     })
@@ -199,6 +202,7 @@ return {
                 noremap = true,
                 silent = true,
             },
+            { "<leader>glg", "<leader>tlg", desc = "Lazygit (Toggleterm)", remap = true }
         },
     },
 
