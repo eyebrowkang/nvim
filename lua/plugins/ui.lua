@@ -9,26 +9,27 @@ return {
         dependencies = 'nvim-tree/nvim-web-devicons',
         event = "VeryLazy",
         cond = nofile(),
+        keys = {
+            { "<leader>bp", "<Cmd>BufferLineTogglePin<CR>", desc = "Toggle pin" },
+            { "<leader>bP", "<Cmd>BufferLineGroupClose ungrouped<CR>", desc = "Delete non-pinned buffers" },
+            { "<leader>bo", "<Cmd>BufferLineCloseOthers<CR>", desc = "Delete other buffers" },
+            { "<leader>br", "<Cmd>BufferLineCloseRight<CR>", desc = "Delete buffers to the right" },
+            { "<leader>bl", "<Cmd>BufferLineCloseLeft<CR>", desc = "Delete buffers to the left" },
+            { "[b", "<cmd>BufferLineCyclePrev<cr>", desc = "Prev buffer" },
+            { "]b", "<cmd>BufferLineCycleNext<cr>", desc = "Next buffer" },
+        },
         opts = {
             options = {
-                mode = "tabs",
+                -- mode = "tabs",
                 separator_style = "slant",
-                always_show_bufferline = false,
+                -- always_show_bufferline = false,
                 diagnostics = "nvim_lsp",
-                diagnostics_indicator = function(_, _, diag)
+                diagnostics_indicator = function(_, _, diagnostics_dict)
                     local icons = require("config.icons").diagnostics
-                    local ret = (diag.error and icons.Error .. diag.error .. " " or "")
-                    .. (diag.warning and icons.Warn .. diag.warning or "")
+                    local ret = (diagnostics_dict.error and icons.Error .. diagnostics_dict.error .. " " or "")
+                    .. (diagnostics_dict.warning and icons.Warn .. diagnostics_dict.warning or "")
                     return vim.trim(ret)
                 end,
-                --[[ offsets = {
-                    {
-                        filetype = "neo-tree",
-                        text = "Neo-tree",
-                        highlight = "Directory",
-                        text_align = "left",
-                    },
-                }, ]]
             },
         },
     },
@@ -42,9 +43,20 @@ return {
         cond = function()
             return nofile()
         end,
+        init = function()
+            vim.g.lualine_laststatus = vim.o.laststatus
+            if vim.fn.argc(-1) > 0 then
+                -- set an empty statusline till lualine loads
+                vim.o.statusline = " "
+            else
+                -- hide the statusline on the starter page
+                vim.o.laststatus = 0
+            end
+        end,
         opts = function()
-
             vim.o.laststatus = vim.g.lualine_laststatus
+
+            local icons = require("config.icons")
 
             return {
                 options = {
@@ -55,16 +67,48 @@ return {
                     },
                 },
                 sections = {
-                    lualine_a = {
-                        { 'mode', separator = { left = '' } }
+                    lualine_a = { 'mode' },
+                    lualine_b = {
+                        'branch',
+                        'filename',
                     },
-                    lualine_b = { 'branch' },
-                    lualine_z = {
-                        { 'location', separator = { right = '' } },
+                    lualine_c = {
+                        {
+                            "diagnostics",
+                            symbols = {
+                                error = icons.diagnostics.Error,
+                                warn = icons.diagnostics.Warn,
+                                info = icons.diagnostics.Info,
+                                hint = icons.diagnostics.Hint,
+                            },
+                        },
                     },
+                    lualine_x = {
+                        {
+                            "diff",
+                            symbols = {
+                                added = icons.git.added,
+                                modified = icons.git.modified,
+                                removed = icons.git.removed,
+                            },
+                            source = function()
+                                local gitsigns = vim.b.gitsigns_status_dict
+                                if gitsigns then
+                                    return {
+                                        added = gitsigns.added,
+                                        modified = gitsigns.changed,
+                                        removed = gitsigns.removed,
+                                    }
+                                end
+                            end,
+                        },
+                        'filetype',
+                    },
+                    lualine_y = { 'progress' },
+                    lualine_z = { 'location' },
                 },
-                extensions = { "lazy" },
+                extensions = { "neo-tree", "lazy" },
             }
         end,
-    }
+    },
 }
