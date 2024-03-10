@@ -25,14 +25,9 @@ return {
     -- lspconfig
     {
         "neovim/nvim-lspconfig",
-        -- event = "LazyFile",
         dependencies = {
             "williamboman/mason.nvim",
             "williamboman/mason-lspconfig.nvim",
-            { "folke/neodev.nvim", opts = {} },
-            -- lsp related
-            -- jsonls
-            "b0o/schemastore.nvim",
         },
         opts = {
             -- options for vim.diagnostic.config()
@@ -52,13 +47,32 @@ return {
             },
         },
         config = function(_, opts)
+            -- :h nvim_create_autocmd
+            vim.api.nvim_create_autocmd("LspAttach", {
+                group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+                callback = function(args)
+                    local buffer = args.buf
+                    local client = vim.lsp.get_client_by_id(args.data.client_id)
+
+                    -- Enable completion triggered by <c-x><c-o>
+                    vim.bo[buffer].omnifunc = 'v:lua.vim.lsp.omnifunc'
+                    vim.keymap.set('n', 'U', vim.lsp.buf.hover, { noremap = true, desc = "Hover", buffer = buffer })
+                    vim.keymap.set('n', 'gd', function() require("telescope.builtin").lsp_definitions({ reuse_win = true }) end, { desc = "Goto Definition", buffer = buffer })
+                    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = "Goto Declaration", buffer = buffer })
+                    vim.keymap.set('n', '<leader>ch', vim.lsp.buf.signature_help, { desc = "Signature Help", buffer = buffer })
+                    vim.keymap.set({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, { desc = "Code Action", buffer = buffer })
+
+                    vim.notify("Lsp Attach Success!")
+                end,
+            })
+
             -- diagnostics
             for name, icon in pairs(require("config.icons").diagnostics) do
                 name = "DiagnosticSign" .. name
                 vim.fn.sign_define(name, { text = icon, texthl = name, numhl = "" })
             end
 
-            vim.diagnostic.config(vim.deepcopy(opts.diagnostics))
+            vim.diagnostic.config(opts.diagnostics)
 
             -- mason-lspconfig
             require("mason-lspconfig").setup {
@@ -119,4 +133,15 @@ return {
         },
         config = true,
     },
+
+    -- lsp server related
+    {
+        "folke/neodev.nvim",
+        event = "VeryLazy",
+        opts = {}
+    },
+    {
+        "b0o/schemastore.nvim",
+        event = "VeryLazy",
+    }
 }

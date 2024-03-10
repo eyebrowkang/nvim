@@ -20,6 +20,7 @@ return {
                 end,
                 desc = "Focus Explorer NeoTree (cwd)",
             },
+            { "<leader>er", "<Cmd>Neotree reveal<CR>", desc = "Reveal current file"},
             {
                 "<leader>es",
                 function()
@@ -56,7 +57,7 @@ return {
             window = {
                 width = 20,
                 mappings = {
-                    -- ["<cr>"] = {
+                    -- ["<CR>"] = {
                     --     "toggle_node",
                     -- },
                     ["z"] = "close_all_nodes",
@@ -91,7 +92,7 @@ return {
     -- hunks in a commit.
     {
         "lewis6991/gitsigns.nvim",
-        -- event = "LazyFile",
+        event = "VeryLazy",
         opts = {
             signs = {
                 add = { text = "▎" },
@@ -111,8 +112,8 @@ return {
                 -- stylua: ignore start
                 map("n", "]h", gs.next_hunk, "Next Hunk")
                 map("n", "[h", gs.prev_hunk, "Prev Hunk")
-                map({ "n", "v" }, "<leader>ghs", ":Gitsigns stage_hunk<CR>", "Stage Hunk")
-                map({ "n", "v" }, "<leader>ghr", ":Gitsigns reset_hunk<CR>", "Reset Hunk")
+                map({ "n", "v" }, "<leader>ghs", "<Cmd>Gitsigns stage_hunk<CR>", "Stage Hunk")
+                map({ "n", "v" }, "<leader>ghr", "<Cmd>Gitsigns reset_hunk<CR>", "Reset Hunk")
                 map("n", "<leader>ghS", gs.stage_buffer, "Stage Buffer")
                 map("n", "<leader>ghu", gs.undo_stage_hunk, "Undo Stage Hunk")
                 map("n", "<leader>ghR", gs.reset_buffer, "Reset Buffer")
@@ -121,7 +122,7 @@ return {
                 map("n", "<leader>ghl", gs.toggle_current_line_blame, "Toggle Current Line Blame")
                 map("n", "<leader>ghd", gs.diffthis, "Diff This")
                 map("n", "<leader>ghD", function() gs.diffthis("~") end, "Diff This ~")
-                map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "GitSigns Select Hunk")
+                map({ "o", "x" }, "ih", "<Cmd>Gitsigns select_hunk<CR>", "GitSigns Select Hunk")
             end,
         },
     },
@@ -160,6 +161,7 @@ return {
     {
         'akinsho/toggleterm.nvim',
         version = "*",
+        cmd = "Toggleterm",
         opts = {
             size = function(term)
                 if term.direction == "horizontal" then
@@ -188,7 +190,7 @@ return {
                         -- function to run on opening the terminal
                         on_open = function(term)
                             vim.cmd("startinsert!")
-                            vim.api.nvim_buf_set_keymap(term.bufnr, "n", "q", "<cmd>close<CR>", {noremap = true, silent = true})
+                            vim.api.nvim_buf_set_keymap(term.bufnr, "n", "q", "<Cmd>close<CR>", {noremap = true, silent = true})
                         end,
                         -- function to run on closing the terminal
                         on_close = function()
@@ -211,7 +213,12 @@ return {
     -- instances.
     {
         "RRethy/vim-illuminate",
-        -- event = "LazyFile",
+        dependencies = "neovim/nvim-lspconfig",
+        event = "VeryLazy",
+        keys = {
+            { "]]", desc = "Next Reference" },
+            { "[[", desc = "Prev Reference" },
+        },
         opts = {
             -- providers: provider used to get references in the buffer, ordered by priority
             providers = {
@@ -228,27 +235,23 @@ return {
         config = function(_, opts)
             require("illuminate").configure(opts)
 
-            -- local function map(key, dir, buffer)
-            --     vim.keymap.set("n", key, function()
-            --         require("illuminate")["goto_" .. dir .. "_reference"](false)
-            --     end, { desc = dir:sub(1, 1):upper() .. dir:sub(2) .. " Reference", buffer = buffer })
-            -- end
-            --
-            -- map("]]", "next")
-            -- map("[[", "prev")
-        --
-        --     -- also set it after loading ftplugins, since a lot overwrite [[ and ]]
-        --     vim.api.nvim_create_autocmd("FileType", {
-        --         callback = function()
-        --             local buffer = vim.api.nvim_get_current_buf()
-        --             map("]]", "next", buffer)
-        --             map("[[", "prev", buffer)
-        --         end,
-        --     })
+            local function map(key, dir, buffer)
+                vim.keymap.set("n", key, function()
+                    require("illuminate")["goto_" .. dir .. "_reference"](false)
+                end, { desc = dir:sub(1, 1):upper() .. dir:sub(2) .. " Reference", buffer = buffer })
+            end
+
+            map("]]", "next")
+            map("[[", "prev")
+
+                -- also set it after loading ftplugins, since a lot overwrite [[ and ]]
+                vim.api.nvim_create_autocmd("FileType", {
+                    callback = function()
+                        local buffer = vim.api.nvim_get_current_buf()
+                        map("]]", "next", buffer)
+                        map("[[", "prev", buffer)
+                    end,
+                })
         end,
-        -- keys = {
-        --     { "]]", desc = "Next Reference" },
-        --     { "[[", desc = "Prev Reference" },
-        -- },
     },
 }
