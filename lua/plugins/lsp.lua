@@ -28,6 +28,7 @@ return {
         dependencies = {
             "williamboman/mason.nvim",
             "williamboman/mason-lspconfig.nvim",
+            "folke/neodev.nvim",
         },
         opts = {
             -- options for vim.diagnostic.config()
@@ -45,8 +46,61 @@ return {
                     },
                 },
             },
+
+            -- lsp servers
+            servers = {
+                lua_ls = {
+                    settings = {
+                        Lua = {
+                            format = {
+                                enable = false,
+                            },
+                            hint = {
+                                enable = true,
+                                arrayIndex = "Disable", -- "Enable", "Auto", "Disable"
+                                await = true,
+                                paramName = "All", -- "All", "Literal", "Disable"
+                                paramType = true,
+                                semicolon = "Disable", -- "All", "SameLine", "Disable"
+                                setType = true,
+                            },
+                            workspace = {
+                                checkThirdParty = false,
+                            },
+                            codeLens = {
+                                enable = true,
+                            },
+                            completion = {
+                                callSnippet = "Replace",
+                            },
+                        },
+                    },
+                },
+                jsonls = {
+                    settings = {
+                        json = {
+                            validate = { enable = true },
+                        },
+                    },
+                },
+                html = {},
+                cssls = {},
+                tsserver = {},
+                volar = {},
+                eslint = {
+                    on_attach = function(_, bufnr)
+                        vim.api.nvim_create_autocmd("BufWritePre", {
+                            buffer = bufnr,
+                            command = "EslintFixAll",
+                        })
+                    end,
+                },
+                gopls = {},
+                rust_analyzer = {},
+            },
         },
         config = function(_, opts)
+            -- require("config.debug").simpleLog("lspconfig load")
             -- :h nvim_create_autocmd
             vim.api.nvim_create_autocmd("LspAttach", {
                 group = vim.api.nvim_create_augroup('UserLspConfig', {}),
@@ -61,6 +115,7 @@ return {
                     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = "Goto Declaration", buffer = buffer })
                     vim.keymap.set('n', '<leader>ch', vim.lsp.buf.signature_help, { desc = "Signature Help", buffer = buffer })
                     vim.keymap.set({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, { desc = "Code Action", buffer = buffer })
+                    vim.keymap.set('n', '<space>cf', function() vim.lsp.buf.format { async = true } end, { desc = "Code Format", buffer = buffer })
 
                     vim.notify("Lsp Attach Success!")
                 end,
@@ -85,41 +140,15 @@ return {
                 },
             }
 
+
+            -- for nvim development
+            require("neodev").setup {}
+
             -- lspconfig servers
             local lspconfig = require('lspconfig')
-            require("neodev").setup {}
-            lspconfig.lua_ls.setup {
-                settings = {
-                    Lua = {
-                        format = {
-                            enable = false,
-                        },
-                        hint = {
-                            enable = true,
-                            arrayIndex = "Disable", -- "Enable", "Auto", "Disable"
-                            await = true,
-                            paramName = "All", -- "All", "Literal", "Disable"
-                            paramType = true,
-                            semicolon = "Disable", -- "All", "SameLine", "Disable"
-                            setType = true,
-                        },
-                        workspace = {
-                            checkThirdParty = false,
-                        },
-                    },
-                },
-            }
-            lspconfig.html.setup {}
-            lspconfig.cssls.setup {}
-            lspconfig.tsserver.setup {}
-            lspconfig.jsonls.setup {
-                settings = {
-                    json = {
-                        schemas = require('schemastore').json.schemas(),
-                        validate = { enable = true },
-                    },
-                },
-            }
+            for key, value in pairs(opts.servers) do
+                lspconfig[key].setup(value)
+            end
         end,
     },
 
@@ -136,12 +165,13 @@ return {
 
     -- lsp server related
     {
-        "folke/neodev.nvim",
-        event = "VeryLazy",
-        opts = {}
-    },
-    {
         "b0o/schemastore.nvim",
+        dependencies = {
+            "neovim/nvim-lspconfig",
+            opts = function(_, opts)
+                table.insert(opts.servers.jsonls.settings.json, { schemas = require('schemastore').json.schemas() })
+            end,
+        },
         event = "VeryLazy",
     }
 }

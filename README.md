@@ -14,6 +14,8 @@
 - tar/gtar
 - gzip
 - unzip
+- make
 
 ## Thanks
-- https://github.com/folke/lazy.nvim
+some config copied from [LazyVim](https://github.com/LazyVim/LazyVim), it's a great project, I don't use it just because I want more flexible.
+
