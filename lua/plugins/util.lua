@@ -19,7 +19,7 @@ return {
             defaults = {
                 mode = { "n", "v" },
                 ["g"] = { name = "+goto" },
-                -- ["gs"] = { name = "+surround" },
+                ["ys"] = { name = "+surround" },
                 ["]"] = { name = "+next" },
                 ["["] = { name = "+prev" },
                 -- ["<leader><tab>"] = { name = "+tabs" },
@@ -35,7 +35,7 @@ return {
                 ["<leader>t"] = { name = "+terminal" },
                 -- ["<leader>u"] = { name = "+ui" },
                 -- ["<leader>w"] = { name = "+windows" },
-                -- ["<leader>x"] = { name = "+diagnostics/quickfix" },
+                ["<leader>x"] = { name = "+diagnostics/quickfix" },
             },
         },
         config = function(_, opts)

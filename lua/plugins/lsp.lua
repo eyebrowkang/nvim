@@ -29,6 +29,7 @@ return {
             "williamboman/mason.nvim",
             "williamboman/mason-lspconfig.nvim",
             "folke/neodev.nvim",
+            "stevearc/conform.nvim",
         },
         opts = {
             -- options for vim.diagnostic.config()
@@ -83,10 +84,10 @@ return {
                         },
                     },
                 },
+                marksman = {},
                 html = {},
                 cssls = {},
                 tsserver = {},
-                volar = {},
                 eslint = {
                     on_attach = function(_, bufnr)
                         vim.api.nvim_create_autocmd("BufWritePre", {
@@ -95,6 +96,7 @@ return {
                         })
                     end,
                 },
+                -- volar = {},
                 gopls = {},
                 rust_analyzer = {},
             },
@@ -115,7 +117,8 @@ return {
                     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = "Goto Declaration", buffer = buffer })
                     vim.keymap.set('n', '<leader>ch', vim.lsp.buf.signature_help, { desc = "Signature Help", buffer = buffer })
                     vim.keymap.set({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, { desc = "Code Action", buffer = buffer })
-                    vim.keymap.set('n', '<space>cf', function() vim.lsp.buf.format { async = true } end, { desc = "Code Format", buffer = buffer })
+                    -- vim.keymap.set('n', '<leader>cf', function() vim.lsp.buf.format { async = true } end, { desc = "Code Format", buffer = buffer })
+                    vim.keymap.set('n', '<leader>cf', function() require("conform").format({ bufnr = buffer }) end, { desc = "Code Format", buffer = buffer })
 
                     vim.notify("Lsp Attach Success!")
                 end,
@@ -133,10 +136,12 @@ return {
             require("mason-lspconfig").setup {
                 ensure_installed = {
                     "lua_ls",
+                    "jsonls",
+                    "marksman",
                     "html",
                     "cssls",
                     "tsserver",
-                    "jsonls",
+                    "eslint"
                 },
             }
 
@@ -144,9 +149,12 @@ return {
             -- for nvim development
             require("neodev").setup {}
 
+            local capabilities = require('cmp_nvim_lsp').default_capabilities()
+
             -- lspconfig servers
             local lspconfig = require('lspconfig')
             for key, value in pairs(opts.servers) do
+                value.capabilities = capabilities
                 lspconfig[key].setup(value)
             end
         end,
