@@ -12,6 +12,7 @@ return {
         opts = {
             ensure_installed = { "c", "lua", "vim", "vimdoc", "javascript", "html", "css" },
             sync_install = false,
+            auto_install = true,
             autotag = { enable = true },
             highlight = {
                 enable = true,

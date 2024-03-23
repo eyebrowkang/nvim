@@ -96,7 +96,7 @@ return {
                         })
                     end,
                 },
-                -- volar = {},
+                volar = {},
                 gopls = {},
                 rust_analyzer = {},
             },
@@ -120,7 +120,6 @@ return {
                     -- vim.keymap.set('n', '<leader>cf', function() vim.lsp.buf.format { async = true } end, { desc = "Code Format", buffer = buffer })
                     vim.keymap.set('n', '<leader>cf', function() require("conform").format({ bufnr = buffer }) end, { desc = "Code Format", buffer = buffer })
 
-                    vim.notify("Lsp Attach Success!")
                 end,
             })
 

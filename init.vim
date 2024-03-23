@@ -47,6 +47,7 @@ set mouse=nvi
 set ruler
 set nostartofline
 set ttimeoutlen=100
+set exrc
 " }}}
 " Syntax: {{{
 syntax enable
