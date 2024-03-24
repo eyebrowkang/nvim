@@ -40,6 +40,8 @@ return {
                 -- >> end <<
                 go = { "gofmt" },
                 rust = { "rustfmt" },
+                -- Use the "*" filetype to run formatters on all filetypes.
+                ["*"] = { "codespell" },
             },
             format = {
                 timeout_ms = 3000,

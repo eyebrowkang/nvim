@@ -97,6 +97,7 @@ return {
                     end,
                 },
                 volar = {},
+                tailwindcss = {},
                 gopls = {},
                 rust_analyzer = {},
             },
