@@ -80,7 +80,7 @@ noremap l u
 " Copy to system clipboard
 vnoremap Y "+y
 
-noremap <CR> ciw
+" noremap <CR> ciw
 inoremap <C-A> <Esc>I
 inoremap <C-E> <Esc>A
 nnoremap <C-L> :nohlsearch<CR><C-L>

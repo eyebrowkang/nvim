@@ -146,7 +146,9 @@ return {
 
 
             -- for nvim development
-            require("neodev").setup {}
+            require("neodev").setup({
+                library = { plugins = { "nvim-dap-ui" }, types = true },
+            })
 
             local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
