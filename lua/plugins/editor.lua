@@ -150,6 +150,7 @@ return {
         dependencies = { 'nvim-lua/plenary.nvim' },
         keys = {
             { "<leader>ff", function() require('telescope.builtin').find_files() end, desc = "Find files (Telescope)" },
+            { "<leader>fg", function() require('telescope.builtin').git_status() end, desc = "Find Changed files (Telescope)" },
             { "<leader>fs", function() require('telescope.builtin').live_grep() end, desc = "Search/Grep in files (Telescope)" },
             { "<leader>fb", function() require('telescope.builtin').buffers() end, desc = "Find buffers (Telescope)" },
             { "<leader>bf", "<leader>fb", desc = "Find buffers (Telescope)", remap = true },
