@@ -100,6 +100,7 @@ return {
                 tailwindcss = {},
                 gopls = {},
                 rust_analyzer = {},
+                clangd = {},
             },
         },
         config = function(_, opts)
