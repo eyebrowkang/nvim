@@ -313,4 +313,5 @@ return {
             { "<leader>ft", "<cmd>TodoTelescope keywords=TODO,FIX,FIXME<cr>", desc = "Todo/Fix/Fixme" },
         },
     },
+    "bronson/vim-visual-star-search"
 }
