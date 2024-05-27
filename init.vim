@@ -58,24 +58,24 @@ filetype plugin indent on
 " }}}
 " Keymap: {{{
 " <<< Arrow Keys >>>
-noremap n h
-noremap u k
-noremap e j
-noremap i l
+" noremap n h
+" noremap u k
+" noremap e j
+" noremap i l
 
-noremap L H
-noremap N M
-noremap M L
-noremap h nzz
-noremap H Nzz
-noremap U K
-noremap k i
-noremap K I
+" noremap L H
+" noremap N M
+" noremap M L
+" noremap h nzz
+" noremap H Nzz
+" noremap U K
+" noremap k i
+" noremap K I
 " noremap E J
-noremap j e
+" noremap j e
 " noremap J E
-noremap I U
-noremap l u
+" noremap I U
+" noremap l u
 
 " Copy to system clipboard
 vnoremap Y "+y
@@ -90,10 +90,10 @@ nnoremap <C-L> :nohlsearch<CR><C-L>
 " map <C-W>e <C-W>j
 " map <C-W>n <C-W>h
 " map <C-W>i <C-W>l
-map <C-W><C-U> <C-W>k
-map <C-W><C-E> <C-W>j
-map <C-W><C-N> <C-W>h
-map <C-W><C-I> <C-W>l
+" map <C-W><C-U> <C-W>k
+" map <C-W><C-E> <C-W>j
+" map <C-W><C-N> <C-W>h
+" map <C-W><C-I> <C-W>l
 
 let g:mapleader=" "
 let g:maplocalleader="\\"
