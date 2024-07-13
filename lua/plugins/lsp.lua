@@ -156,6 +156,7 @@ return {
 
             -- lspconfig servers
             local lspconfig = require('lspconfig')
+            opts.servers.jsonls.settings.json.schemas = require('schemastore').json.schemas()
             for key, value in pairs(opts.servers) do
                 value.capabilities = capabilities
                 lspconfig[key].setup(value)
@@ -177,12 +178,6 @@ return {
     -- lsp server related
     {
         "b0o/schemastore.nvim",
-        dependencies = {
-            "neovim/nvim-lspconfig",
-            opts = function(_, opts)
-                table.insert(opts.servers.jsonls.settings.json, { schemas = require('schemastore').json.schemas() })
-            end,
-        },
         event = "VeryLazy",
     }
 }
