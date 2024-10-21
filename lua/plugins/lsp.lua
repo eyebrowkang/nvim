@@ -87,7 +87,7 @@ return {
                 marksman = {},
                 html = {},
                 cssls = {},
-                tsserver = {},
+                ts_ls = {},
                 eslint = {
                     on_attach = function(_, bufnr)
                         vim.api.nvim_create_autocmd("BufWritePre", {
@@ -141,7 +141,7 @@ return {
                     "marksman",
                     "html",
                     "cssls",
-                    "tsserver",
+                    "ts_ls",
                     "eslint"
                 },
             }
