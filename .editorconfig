@@ -1,0 +1,27 @@
+# .editorconfig - Neovim 配置仓库通用格式规范
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# 默认缩进为 2 空格
+indent_style = space
+indent_size = 2
+
+# Markdown 文件通常不移除尾部空格（避免破坏换行）
+[*.md]
+trim_trailing_whitespace = false
+
+# Lua 文件：使用 2 空格缩进（与 stylua 一致）
+[*.lua]
+indent_style = space
+indent_size = 2
+
+# Vim 脚本文件：Vim 推荐也用 2 空格缩进
+[*.vim]
+indent_style = space
+indent_size = 2
+
