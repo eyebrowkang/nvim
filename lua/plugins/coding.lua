@@ -82,6 +82,13 @@ return {
         end,
         desc = "Previous todo comment",
       },
+      {
+        "<leader>ft",
+        function()
+          vim.cmd("TodoTelescope")
+        end,
+        desc = "Open Todo List in Telescope",
+      },
     },
     config = true,
   },
@@ -244,6 +251,11 @@ return {
         "<cmd>Trouble qflist toggle<cr>",
         desc = "Quickfix List (Trouble)",
       },
+      {
+        "<leader>xt",
+        "<cmd>Trouble todo toggle<cr>",
+        desc = "Todo List in Trouble",
+      },
     },
   },
 
@@ -318,6 +330,9 @@ return {
           "dirvish",
           "fugitive",
           "mason",
+          "neo-tree",
+          "checkhealth",
+          "notify",
         },
       })
     end,
