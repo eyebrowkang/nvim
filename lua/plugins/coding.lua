@@ -379,6 +379,8 @@ return {
         rust = { "rustfmt" },
         c = { "clang-format" },
         cpp = { "clang-format" },
+        terraform = { "terraform" },
+        hcl = { "terraform" },
       },
       format_on_save = {
         timeout_ms = 500,

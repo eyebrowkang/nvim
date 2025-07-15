@@ -48,6 +48,7 @@ return {
         "cssls",
         "eslint",
         "pyright",
+        "terraformls",
       })
 
       -- for all clients
