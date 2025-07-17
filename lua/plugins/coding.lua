@@ -373,7 +373,7 @@ return {
         htmlangular = { "prettier" },
         -- >>> frontend ⬆️
         json = { "prettier" },
-        yaml = { "prettier" },
+        yaml = { "yamlfmt" },
         markdown = { "prettier" },
         go = { "gofmt", "goimports" },
         rust = { "rustfmt" },

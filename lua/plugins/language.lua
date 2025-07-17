@@ -49,11 +49,16 @@ return {
         "eslint",
         "pyright",
         "terraformls",
+        "ansiblels",
       })
 
       -- for all clients
       vim.lsp.config("*", {
         capabilities = require("blink.cmp").get_lsp_capabilities(),
+      })
+
+      vim.lsp.config("ansiblels", {
+        filetypes = { "yaml" },
       })
 
       vim.api.nvim_create_autocmd("LspAttach", {
