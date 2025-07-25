@@ -78,6 +78,16 @@ return {
     lazy = false, -- neo-tree will lazily load itself
     keys = {
       {
+        "<leader>bw",
+        function()
+          require("neo-tree.command").execute({
+            action = "close",
+          })
+          vim.cmd("bwipe")
+        end,
+        desc = "Close NeoTree and wipe current buffer",
+      },
+      {
         "<leader>n",
         function()
           require("neo-tree.command").execute({ dir = vim.loop.cwd(), toggle = true })
