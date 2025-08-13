@@ -57,10 +57,6 @@ return {
         capabilities = require("blink.cmp").get_lsp_capabilities(),
       })
 
-      vim.lsp.config("ansiblels", {
-        filetypes = { "yaml" },
-      })
-
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("my.lsp", {}),
         callback = function(args)

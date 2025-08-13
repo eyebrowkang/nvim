@@ -103,6 +103,20 @@ let g:loaded_perl_provider = 0
 let g:loaded_python3_provider = 0
 let g:loaded_ruby_provider = 0
 
+augroup ansible_filetype
+  autocmd!
+  autocmd BufRead,BufNewFile *.yml,*.yaml call s:set_ansible_filetype()
+augroup END
+
+function! s:set_ansible_filetype()
+  let filepath = expand('%:p')
+  let filename = expand('%:t')
+  
+  if filepath =~ 'inventory\|playbook\|roles'
+    set filetype=yaml.ansible
+  endif
+endfunction
+
 " 加载插件系统(lazy.nvim)
 lua require("config.lazy")
 
