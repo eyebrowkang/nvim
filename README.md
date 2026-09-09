@@ -11,7 +11,7 @@
 
 | 项 | 值 |
 | --- | --- |
-| Neovim | 0.12.4（`vim.hl`、`winborder` 需要 0.11+，`vim.uv` 需要 0.10+） |
+| Neovim | 0.12.4（最低 0.11：`vim.hl`、`winborder`、`vim.lsp.config`、`gr*` 内置映射） |
 | 目标平台 | **macOS 与 Linux 通用**，不写平台专属配置 |
 | 当前主力环境 | macOS + Ghostty，Neovim 由 MacPorts 安装（`/opt/local`） |
 | 字体 | **需要 Nerd Font**，否则图标显示成豆腐块。终端里指定即可，Neovim 不管字体 |
@@ -29,17 +29,32 @@
 | `fzf` | fzf-lua | 所有 `<leader>f` 快捷键都不出界面 |
 | C 编译器 | nvim-treesitter | 装不了新解析器，已装的照常用 |
 | `tree-sitter` | nvim-treesitter | 同上 |
+| `git` `curl` | blink.cmp（下载补全用的预编译二进制） | 补全菜单出不来 |
+| `node` `npm` | mason 装的大部分语言服务器 | 那几个服务器装不上，其余照常 |
+| `python3` + venv | mason 装 basedpyright 时要建虚拟环境 | Python 的类型检查装不上 |
 
 「按语法」的那些功能都建立在解析器之上：某个语言没装解析器时，
 它的文件里 `am` / `ic` / `i=` / `]m` / `S` 会不生效，其余按键照常。
 
+语言服务器不需要手动装：换台机器后第一次用 Neovim 打开任意文件时，
+mason 会把 [lua/plugins/lsp.lua](lua/plugins/lsp.lua) 里 `ensure_installed` 那张表
+缺的一次性装齐（这一次会等上几分钟，之后就不再有了；进度看 `:Mason`）。
+
+但**格式化器和 linter 不是语言服务器，`ensure_installed` 管不着**，要手动装一次：
+
+```vim
+:MasonInstall stylua prettierd markdownlint-cli2
+```
+
 ```bash
 # macOS
-brew install ripgrep fzf tree-sitter
+brew install ripgrep fzf tree-sitter node
 xcode-select --install                      # C 编译器
 
 # Debian / Ubuntu
-sudo apt install ripgrep fzf build-essential
+sudo apt install ripgrep fzf build-essential python3-venv python3-pip
+# Node.js 用 nvm 装（apt 源里的版本通常过旧），装完 nvm 再 nvm install --lts：
+#   github.com/nvm-sh/nvm 的 README 里有安装命令
 # tree-sitter CLI 要求 >= 0.26.1，apt 源里的版本通常过旧，
 # 从 github.com/tree-sitter/tree-sitter 的 release 下二进制放进 PATH。
 # 官方明确说不要用 npm 装。
@@ -50,6 +65,9 @@ sudo apt install ripgrep fzf build-essential
 ```vim
 :checkhealth fzf_lua           " 注意是下划线；要先按一次 <leader>ff 让插件载入
 :checkhealth nvim-treesitter
+:checkhealth mason             " 语言服务器安装器要的外部命令齐不齐
+:checkhealth vim.lsp           " 当前挂了哪些语言服务器、各自的日志在哪
+:checkhealth blink.cmp         " 补全用的二进制下下来没有
 ```
 
 ## 目录结构
@@ -74,6 +92,11 @@ sudo apt install ripgrep fzf build-essential
 │       ├── colorizer.lua      # 颜色代码高亮：nvim-colorizer
 │       ├── alpha.lua          # 起始页：alpha-nvim
 │       ├── treesitter.lua     # 语法解析：nvim-treesitter（高亮的底座）
+│       ├── lsp.lua            # 语言服务器：mason + mason-lspconfig + nvim-lspconfig
+│       ├── lazydev.lua        # 让 lua_ls 认识 vim.* 这些 Neovim API：lazydev
+│       ├── cmp.lua            # 自动补全 + Snippet：blink.cmp + friendly-snippets
+│       ├── conform.lua        # 格式化：conform.nvim
+│       ├── lint.lua           # 独立 linter（补语言服务器不管的）：nvim-lint
 │       ├── neotree.lua        # 文件树：neo-tree
 │       ├── fzf.lua            # 模糊查找：fzf-lua
 │       ├── grug-far.lua       # 全项目搜索替换：grug-far
@@ -119,6 +142,7 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `<leader>f…` | **f**ind，查找：文件、内容、buffer、帮助、按键、待办 |
 | `<leader>s…` | **s**earch & replace，全项目搜索替换 |
 | `<leader>b…` | **b**uffer 标签栏操作 |
+| `<leader>c…` | **c**ode，代码相关；目前只有 `<leader>cf` 格式化 |
 | `<leader>a` `<leader>A` | **a**rgument，当前参数和后一个 / 前一个对调位置 |
 | `<leader>y` `<leader>p` | 系统剪贴板复制 / 粘贴（普通寄存器保持独立） |
 | `<leader>?` | 列出当前缓冲区里所有可用按键 |
@@ -135,7 +159,6 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `<C-方向键>` | 调整窗口大小 |
 | `<C-l>` | 清掉搜索高亮（Neovim 内置） |
 | `[b` `]b` | 上一个 / 下一个 buffer（Neovim 内置） |
-| `[d` `]d` | 上一个 / 下一个诊断（Neovim 内置） |
 | `[q` `]q` | quickfix 列表前后跳（Neovim 内置） |
 | `gc` | 切换注释（Neovim 内置，接动作或在可视模式用） |
 
@@ -146,13 +169,13 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `a` / `i` + 代号 | 文本对象，跟在 `d` `c` `y` `v` 后面用；代号见下 |
 | `aN` `iN` / `aL` `iL` | 同上，但取光标之后 / 之前的那一个，如 `ciNq` 改后面那对引号里的内容 |
 | `g[` `g]` | 跳到当前文本对象的左 / 右边界，如 `g]f` 跳到函数调用的右括号 |
-| `an` `in`（可视模式）| 按语法逐层扩大 / 缩小选区（Neovim 内置） |
+| `an` `in`（可视模式） | 按语法逐层扩大 / 缩小选区（Neovim 内置） |
 | `ys` + 动作 + 符号 | 给一段文本加环绕符号，如 `ysiw"`；`yss` 是整行 |
 | `ds` + 符号 | 删掉环绕符号，如 `ds"` |
 | `cs` + 旧 + 新 | 替换环绕符号，如 `cs"'` |
 | `yS` `ySS` `cS` | 同上三个，但让符号各占一行 |
 | `S`（可视模式） | 把选中内容包起来；`gS` 是包起来并各占一行 |
-| `<C-g>s`（插入模式）| 在光标处插入一对环绕符号 |
+| `<C-g>s`（插入模式） | 在光标处插入一对环绕符号 |
 | `gS` | 参数列表拆成多行 / 合成一行（普通模式） |
 | `ga` `gA` | 按分隔符对齐 / 带预览地对齐（覆盖了原生 `ga`，等价写法 `:ascii`） |
 | `<M-e>`（插入模式） | 把光标后面的内容用一对括号包住 |
@@ -171,6 +194,50 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `?` | 现场输入左右边界，用来对付上面没覆盖的怪符号 |
 | `m` `c` `=` | 函数定义 / 类 / 赋值语句，靠 treesitter 认语法；`ci=` 就是「换掉这个变量的值」 |
 
+代码智能。**这一组全部是 Neovim 0.12 内置的，配置里一个都没映射**，
+文件挂上语言服务器就能用（`:help lsp-defaults`）：
+
+| 按键 | 用途 |
+| --- | --- |
+| `K` | 悬浮显示光标处符号的文档；再按一次进浮窗，`q` 关掉 |
+| `<C-]>` | 跳到定义（`<C-t>` 跳回来） |
+| `grn` | **r**e**n**ame，重命名符号：改一处，全项目的引用一起改 |
+| `gra` | code **a**ction，代码操作：自动导入、快速修复……普通和可视模式都能用 |
+| `grr` | **r**eferences，列出所有引用 |
+| `gri` | **i**mplementation，跳到实现 |
+| `grt` | **t**ype，跳到类型定义 |
+| `gO` | **o**utline，列出本文件的符号大纲 |
+| `<C-s>`（插入模式） | 显示当前函数的参数签名 |
+| `gq` + 动作 | 按语言服务器的规则格式化一段范围 |
+
+唯一自己映射的一个：
+
+| 按键 | 用途 |
+| --- | --- |
+| `<leader>cf` | 格式化整个文件；可视模式下只格式化选区（conform.nvim） |
+
+诊断（就是代码里的错误和警告，显示样式在 `lua/config/options.lua` 第 9 节）：
+
+| 按键 | 用途 |
+| --- | --- |
+| `]d` `[d` | 下一条 / 上一条诊断（Neovim 内置） |
+| `]D` `[D` | 本文件最后一条 / 第一条诊断（Neovim 内置） |
+| `<C-w>d` | 浮窗显示光标所在行的诊断全文，消息太长被截断时用（Neovim 内置） |
+
+补全菜单（blink.cmp，用的是它的 `default` 预设 —— 全部是 `Ctrl` 组合键，
+不占用 `<CR>` 和 `<Tab>`，所以打字节奏完全不受影响）：
+
+| 按键 | 用途 |
+| --- | --- |
+| `<C-n>` `<C-p>` | 选下一个 / 上一个候选（`<Down>` `<Up>` 同义） |
+| `<C-y>` | **y**es，确认选中的候选 |
+| `<C-e>` | 关掉菜单，保留已经打出来的字 |
+| `<C-space>` | 手动唤出菜单；菜单已开时切换右侧文档面板 |
+| `<C-b>` `<C-f>` | 文档面板内容太长时上下翻页 |
+| `<Tab>` `<S-Tab>` | **仅在代码片段展开后**：跳到下一个 / 上一个待填空位 |
+
+函数签名不归它管，用上面内置的 `<C-s>`。
+
 内置映射的完整清单：`:help default-mappings`。
 想查某个键现在归谁管，用 `<leader>fk` 或 `:verbose map <键>`。
 
@@ -185,6 +252,19 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 :Lazy sync       " 一次搞定：装缺的、删多的、更新到锁文件之外的最新版
 :Lazy restore    " 按 lazy-lock.json 把所有插件回滚到锁定的版本
 :Lazy health     " 等价于 :checkhealth lazy
+```
+
+语言服务器与格式化：
+
+```vim
+:Mason                    " 安装器面板（i 装 / X 卸 / u 更新 / U 全部更新；g? 看完整按键）
+:MasonInstall stylua      " 直接装某个工具，格式化器和 linter 都靠它
+:MasonLog                 " 装不上时看这里，报错原因全在日志里
+:checkhealth vim.lsp      " 当前挂了哪些服务器、根目录认到哪、日志文件在哪
+:lua =vim.lsp.config.lua_ls   " 查某个服务器最终生效的配置（合并过所有层之后的）
+:lsp restart              " 改完配置或服务器卡住时重启它（还有 enable/disable/stop）
+:ConformInfo              " 当前文件会用哪个格式化器、它装了没有
+:LazyDev                  " 查 lua_ls 当前加载了哪些库（补全不出 vim.* 时看这个）
 ```
 
 ## 约定
@@ -203,6 +283,8 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
   是换机器复现出同一套环境的依据。插件装完/更新完记得连它一起提交。
 - **一个插件一个文件**，放在 `lua/plugins/` 下，文件名说清楚它是干什么的。
   不想要某个插件时删掉对应文件即可，`:Lazy` 下次会把它清理掉。
+  例外是几个必须一起用、单独留下任何一个都没意义的：`lsp.lua` 里的
+  mason + mason-lspconfig + nvim-lspconfig 就是这种，拆开反而看不出它们的分工。
 
 ## 调试常用命令
 

@@ -396,6 +396,125 @@ end
 
 ---
 
+## LSP 在 0.12 上是内置能力，插件只是周边
+
+从 0.11 起，`vim.lsp.config()` 和 `vim.lsp.enable()` 进了核心。
+「配置一个语言服务器」这件事本身**不需要任何插件**：
+
+```vim
+:lua vim.lsp.config("foo", { cmd = { "foo-lsp" }, filetypes = { "foo" } })
+:lua vim.lsp.enable("foo")
+```
+
+所以 nvim-lspconfig 现在的全部价值只剩「一堆写好的默认配置」——
+它的仓库里就是一个 `lsp/` 目录，里面每个语言一个 `lsp/<名字>.lua`，
+返回一张配置表。被 lazy.nvim 加载后这个目录进了 `runtimepath`，Neovim 自己就能找到。
+它**没有也不需要 `setup()`**。
+
+### 四层配置的合并顺序
+
+一个客户端启动时，按下面的顺序把四层配置用 `vim.tbl_deep_extend("force", ...)` 叠起来，
+**越靠后优先级越高**（`:help lsp-config-merge`）：
+
+| 层 | 来源 | 谁在用 |
+| --- | --- | --- |
+| 1 | `vim.lsp.config("*", {...})` | 对所有服务器生效的公共设置 |
+| 2 | `runtimepath` 里所有 `lsp/<名字>.lua` | ← nvim-lspconfig 提供的就是这一层 |
+| 3 | `runtimepath` 里所有 `after/lsp/<名字>.lua` | 自己的配置目录，用来覆盖上一层 |
+| 4 | 其他地方调的 `vim.lsp.config("<名字>", {...})` | ← 本仓库的覆盖写在这一层 |
+
+第 3 层是 Vim 的 `after-directory` 惯例（`:help after-directory`），
+不是 LSP 特有的机制。改动多的时候在 `~/.config/nvim/after/lsp/` 下建文件更清爽，
+改动少就直接写 `vim.lsp.config()`。本仓库统一用后者，集中在 `lua/plugins/lsp.lua` 里。
+
+看某个服务器最终生效的是什么：
+
+```vim
+:lua =vim.lsp.config.lua_ls
+```
+
+⚠ 注意这里的**层不是覆盖整张表，而是逐字段深合并**。
+所以给 `basedpyright` 写 `settings.basedpyright.disableOrganizeImports = true`，
+不会把 nvim-lspconfig 那层里的 `disableTaggedHints`、`autoSearchPaths` 冲掉，两边会合在一起。
+
+### 不需要在 `on_attach` 里绑按键
+
+0.11 起 LSP 的常用操作都有内置映射了（`:help lsp-defaults`），
+挂上服务器时还会自动设好三个缓冲区局部选项：
+
+| 选项 | 值 | 于是这个键能用了 |
+| --- | --- | --- |
+| `omnifunc` | `v:lua.vim.lsp.omnifunc` | 插入模式 `<C-x><C-o>` 手动补全 |
+| `tagfunc` | `v:lua.vim.lsp.tagfunc` | `<C-]>` 跳定义、`<C-t>` 跳回 |
+| `formatexpr` | `v:lua.vim.lsp.formatexpr()` | `gq` + 动作，按语言服务器的规则格式化 |
+
+网上大量教程还在写 `on_attach = function(_, bufnr) vim.keymap.set(...) end` 绑十几个键，
+在 0.12 上那是把内置的又抄了一遍。本仓库一个 LSP 按键都没映射。
+
+### `vim.lsp.enable()` 对已经打开的缓冲区也生效
+
+它内部做两件事（`$VIMRUNTIME/lua/vim/lsp.lua`）：注册一个 `FileType` 自动命令，
+然后对已经存在的缓冲区补发一次 —— `vim.cmd.doautoall('nvim.lsp.enable FileType')`。
+
+所以**把管 LSP 的插件懒加载到 `BufReadPre` 是安全的**：
+哪怕 `enable()` 调用得比文件打开还晚，服务器照样挂得上，不需要为此改成 `lazy = false`。
+
+### `automatic_enable = true` 会开出你没想要的服务器
+
+mason-lspconfig 的 `automatic_enable` 默认是 `true`，含义是
+「凡是 mason 装过、且在 nvim-lspconfig 里有同名配置的，一律 `vim.lsp.enable()`」。
+
+坑在于 mason 装的不只是语言服务器，而有些工具**两栖**：
+格式化器 `stylua` 带一个 `--lsp` 模式，nvim-lspconfig 里也就有一份 `lsp/stylua.lua`。
+于是只要为了格式化装了 stylua，每打开一个 Lua 文件就会白白多起一个 stylua 客户端。
+它不报错、不影响功能，只是静静地多一个进程 —— 不主动查根本发现不了。
+
+查法和改法：
+
+```vim
+:lua for _,c in ipairs(vim.lsp.get_clients({bufnr=0})) do print(c.name) end
+```
+
+```lua
+-- 传列表而不是 true，含义变成「只开这些，而且只开其中确实装好了的」
+automatic_enable = { "lua_ls", "ruff" }
+-- 也可以反过来排除：automatic_enable = { exclude = { "stylua" } }
+```
+
+`automatic_enable` 只管 mason 装的东西。系统包管理器装的服务器它一概不碰，
+那种要自己写一行 `vim.lsp.enable("gopls")`。
+
+⚠ mason-lspconfig v2 删掉了 `setup_handlers()`，网上按那个写的配置在新版上直接报错。
+
+### `vim.lsp.status()` 是消费型的，不能直接当状态栏组件
+
+它的实现是 `for progress in client.progress do ... end` ——
+`client.progress` 是个环形缓冲，这样迭代会**把消息取出来并清空队列**。
+
+状态栏每重绘一次就会调一次组件函数。直接写 `lualine_x = { vim.lsp.status }` 的话，
+第一次重绘拿到内容，第二次队列已经空了，屏幕上只会闪一下就没了。
+
+正确的做法是只在「确实有新消息」时调用，把结果存下来给状态栏读：
+
+```lua
+local lsp_progress = ""
+vim.api.nvim_create_autocmd("LspProgress", {
+  callback = function(ev)
+    lsp_progress = vim.lsp.status()
+    -- 进度通知分 begin / report / end 三种，end 表示这项工作干完了，
+    -- 不清空的话最后一条消息会永远挂在状态栏上
+    if vim.tbl_get(ev, "data", "params", "value", "kind") == "end" then
+      lsp_progress = ""
+    end
+    pcall(vim.cmd.redrawstatus)  -- 命令行窗口（q:）里执行会报错，包一层
+  end,
+})
+```
+
+完整版见 `lua/plugins/lualine.lua`。
+
+---
+
 ## 验证插件效果时，别用脚本驱动光标
 
 很多插件（缩进参考线的作用域高亮、彩虹括号等）是在**真实重绘和真实光标移动**时
@@ -432,6 +551,10 @@ nvim --server /tmp/nvim.sock --remote-send ':luafile /tmp/dump.lua<CR>'
 | `vim.highlight` | `vim.hl` | 0.11 |
 | `vim.loop` | `vim.uv` | 0.10 |
 | `vim.lsp.buf_get_clients()` | `vim.lsp.get_clients()` | 0.10 |
+| `lspconfig.lua_ls.setup{}` | `vim.lsp.config()` + `vim.lsp.enable()` | 0.11 |
 
 曾用名通常还留着一个废弃别名，能跑，但会被 `:checkhealth vim.deprecated` 标出来，
 并且计划在未来版本移除。
+
+⚠ 插件自己的 API 改版没有这层保护，是直接删的。
+比如 mason-lspconfig v2 删掉了 `setup_handlers()`，照着旧教程写会直接报错。

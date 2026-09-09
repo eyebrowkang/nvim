@@ -29,6 +29,7 @@ return {
       -- 不在这里重复写一遍 —— 否则删掉某个插件后这里会留下指向不存在按键的死条目。
       spec = {
         { "<leader>b", group = "buffer 标签" },
+        { "<leader>c", group = "代码" },
         { "<leader>f", group = "查找" },
         { "<leader>s", group = "搜索替换" },
         -- <leader>y / <leader>p 这类单键映射不需要分组，它们本身就是完整映射。
