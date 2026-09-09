@@ -7,7 +7,7 @@ logs/*
 # macOS Finder 生成的目录元数据
 .DS_Store
 
-# 注意：以后接入插件管理器时，锁文件要提交进仓库，不要加到这里。
+# 注意：lazy-lock.json 要提交进仓库，不要加到这里。
 # 它锁定每个插件的具体 commit，是「换台机器复现同一套环境」的关键。
-#   - Neovim 内置的 vim.pack → nvim-pack-lock.json（就在本目录下）
-#   - lazy.nvim             → lazy-lock.json
+#
+# 插件本体装在 ~/.local/share/nvim/lazy/，不在本目录下，所以不需要忽略。

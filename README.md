@@ -18,6 +18,37 @@
 | 配置路径 | `~/.config/nvim`（即 `$XDG_CONFIG_HOME/nvim`） |
 | 状态数据 | `~/.local/state/nvim/`（undo 历史等，两个平台一致） |
 
+## 外部命令依赖
+
+有几个插件是在调用命令行工具，Neovim 本身不带这些，得单独装。
+**没装的话 Neovim 照常启动、其他功能不受影响**，只是对应那个插件一用就报「找不到命令」。
+
+| 命令 | 谁要用 | 缺了会怎样 |
+| --- | --- | --- |
+| `ripgrep` | fzf-lua、grug-far、todo-comments | 搜不了内容，只影响搜索类功能 |
+| `fzf` | fzf-lua | 所有 `<leader>f` 快捷键都不出界面 |
+| C 编译器 | nvim-treesitter | 装不了新解析器，已装的照常用 |
+| `tree-sitter` | nvim-treesitter | 同上 |
+
+```bash
+# macOS
+brew install ripgrep fzf tree-sitter
+xcode-select --install                      # C 编译器
+
+# Debian / Ubuntu
+sudo apt install ripgrep fzf build-essential
+# tree-sitter CLI 要求 >= 0.26.1，apt 源里的版本通常过旧，
+# 从 github.com/tree-sitter/tree-sitter 的 release 下二进制放进 PATH。
+# 官方明确说不要用 npm 装。
+```
+
+装完用 `tree-sitter --version` 等命令自查，或在 Neovim 里：
+
+```vim
+:checkhealth fzf_lua           " 注意是下划线；要先按一次 <leader>ff 让插件载入
+:checkhealth nvim-treesitter
+```
+
 ## 目录结构
 
 ```
@@ -38,7 +69,14 @@
 │       ├── indent.lua       # 缩进参考线：indent-blankline
 │       ├── rainbow.lua      # 彩虹括号：rainbow-delimiters
 │       ├── colorizer.lua    # 颜色代码高亮：nvim-colorizer
-│       └── alpha.lua        # 起始页：alpha-nvim
+│       ├── alpha.lua        # 起始页：alpha-nvim
+│       ├── treesitter.lua   # 语法解析：nvim-treesitter（高亮的底座）
+│       ├── neotree.lua      # 文件树：neo-tree
+│       ├── fzf.lua          # 模糊查找：fzf-lua
+│       ├── grug-far.lua     # 全项目搜索替换：grug-far
+│       ├── todo.lua         # 待办注释高亮：todo-comments
+│       ├── flash.lua        # 光标快速跳转：flash
+│       └── whichkey.lua     # 按键提示：which-key
 ├── docs/
 │   ├── notes.md             # 收件箱：随手记，定期清空归档到下面两个文件
 │   ├── cheatsheet.md        # 操作技巧速查（怎么用 Vim）
@@ -59,6 +97,37 @@ init.lua
 ```
 
 为什么顺序不能乱，见 [docs/lua-api.md](docs/lua-api.md#配置的生命线顺序)。
+
+## 按键总览
+
+leader 键是**空格**。按下空格停顿一下，which-key 会把下一层选项列出来，
+所以这张表不用背 —— 记住分组字母就够了。
+
+| 前缀 | 用途 |
+| --- | --- |
+| `<leader>e` `<leader>E` | 文件树：切换 / 定位当前文件 |
+| `<leader>f…` | **f**ind，查找：文件、内容、buffer、帮助、按键、待办 |
+| `<leader>s…` | **s**earch & replace，全项目搜索替换 |
+| `<leader>b…` | **b**uffer 标签栏操作 |
+| `<leader>y` `<leader>p` | 系统剪贴板复制 / 粘贴（普通寄存器保持独立） |
+| `<leader>?` | 列出当前缓冲区里所有可用按键 |
+
+不带 leader 的：
+
+| 按键 | 用途 |
+| --- | --- |
+| `s` | 跳到屏幕上任意位置（flash，覆盖了原生 `s`，等价写法 `cl`） |
+| `S` | 按语法结构选中（flash，覆盖了原生 `S`，等价写法 `cc`） |
+| `<C-w>` + 方向 | 窗口间移动（Neovim 内置） |
+| `<C-方向键>` | 调整窗口大小 |
+| `<C-l>` | 清掉搜索高亮（Neovim 内置） |
+| `[b` `]b` | 上一个 / 下一个 buffer（Neovim 内置） |
+| `[d` `]d` | 上一个 / 下一个诊断（Neovim 内置） |
+| `[q` `]q` | quickfix 列表前后跳（Neovim 内置） |
+| `gc` | 切换注释（Neovim 内置，接动作或在可视模式用） |
+
+内置映射的完整清单：`:help default-mappings`。
+想查某个键现在归谁管，用 `<leader>fk` 或 `:verbose map <键>`。
 
 ## 插件常用命令
 

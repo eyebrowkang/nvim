@@ -176,7 +176,7 @@ diff /tmp/clean.txt /tmp/mine.txt
 
 ---
 
-## lazy.nvim 写 spec 时的三个坑
+## lazy.nvim 写 spec 时的四个坑
 
 ### 1. 懒加载用哪个事件，取决于插件靠哪个事件工作
 
@@ -211,6 +211,72 @@ lazy.nvim 从仓库名推断该在哪个模块上调 `setup()`。推断规则大
 
 反过来，光有 `setup()` 也不一定够 —— 配色插件还得再执行一次 `:colorscheme` 才真正生效，
 所以 `colorscheme.lua` 用的是 `config` 而不是 `opts`。
+
+### 4. 有的插件自己就会调 `setup()`，写了 `opts` 就跑两遍
+
+少数插件（barbar 是一个）在被加载时会自动调一次 `setup()`。
+这时再写 `opts`，lazy.nvim 又会调一次，等于初始化跑了两遍。
+这类插件通常留了一个全局开关来关掉自动调用，要用 `init` 设置 ——
+`init` 在插件加载**之前**执行，用 `config` 就来不及了：
+
+```lua
+init = function() vim.g.barbar_auto_setup = false end,
+opts = { ... },
+```
+
+### 附：`keys` 和 `lazy = false` 可以同时写
+
+`keys` 字段有两个作用：**注册按键映射**，以及**让这些键触发懒加载**。
+写了 `lazy = false` 只是取消了第二个作用，映射照常注册。
+所以插件即使不懒加载，按键也应该写在它自己的 spec 里，
+这样插件和它占用的按键是一份东西，删文件就一起没了，不会留下死键。
+
+---
+
+## nvim-treesitter 在 0.12 上的两个陷阱
+
+### 1. 有两条完全不兼容的分支
+
+| 分支 | 面向 | API |
+| --- | --- | --- |
+| `main` | Neovim 0.12+ | `require("nvim-treesitter").install{...}`，`setup()` 可选 |
+| `master` | 0.11 及更早，已冻结 | `setup{ ensure_installed = ..., highlight = { enable = true } }` |
+
+网上大量教程写的是 `master` 那一套。照抄到 `main` 上不会报错，**会静默无效** ——
+`setup()` 收下那张表然后忽略掉不认识的字段。
+所以 spec 里必须显式写 `branch = "main"`，看到 `ensure_installed` 就知道那是旧分支的写法。
+
+### 2. 装了解析器 ≠ 高亮就开了
+
+Neovim 0.12 **没有**「装了解析器就自动用」的通用机制。
+整个运行时里只有四个 ftplugin 文件主动调了 `vim.treesitter.start()`：
+
+```bash
+grep -rl "treesitter.start" "$VIMRUNTIME/ftplugin/"
+# lua.lua  markdown.lua  query.lua  help.lua
+```
+
+其余语言要自己写一条 `FileType` 自动命令。判断解析器在不在的写法：
+
+```lua
+local lang = vim.treesitter.language.get_lang(vim.bo[buf].filetype)
+if lang and vim.treesitter.language.add(lang) then
+  vim.treesitter.start(buf, lang)
+end
+```
+
+两个 API 的行为值得记住：
+
+- `language.get_lang(ft)` 把**文件类型**翻译成**解析器名**（`sh` → `bash`，`jsonc` → `json`）。
+  没有登记过映射时原样返回文件类型名。
+- `language.add(lang)` 加载成功返回 `true`，找不到返回 `nil` —— **不抛错**，
+  所以可以直接当 `if` 的条件用，不需要包 `pcall`。
+
+确认某个缓冲区到底有没有用上 treesitter：
+
+```vim
+:lua =vim.treesitter.highlighter.active[0] ~= nil
+```
 
 ---
 
