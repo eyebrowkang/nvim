@@ -30,6 +30,9 @@
 | C 编译器 | nvim-treesitter | 装不了新解析器，已装的照常用 |
 | `tree-sitter` | nvim-treesitter | 同上 |
 
+「按语法」的那些功能都建立在解析器之上：某个语言没装解析器时，
+它的文件里 `am` / `ic` / `i=` / `]m` / `S` 会不生效，其余按键照常。
+
 ```bash
 # macOS
 brew install ripgrep fzf tree-sitter
@@ -53,35 +56,42 @@ sudo apt install ripgrep fzf build-essential
 
 ```
 .
-├── init.lua                 # 入口：开缓存 → 定 leader → 按顺序 require
-├── lazy-lock.json           # 插件版本锁文件，由 lazy.nvim 生成，必须进 git
+├── init.lua                   # 入口：开缓存 → 定 leader → 按顺序 require
+├── lazy-lock.json             # 插件版本锁文件，由 lazy.nvim 生成，必须进 git
 ├── lua/
-│   ├── config/              # 核心原生配置（不依赖任何插件）
-│   │   ├── options.lua      # 选项：行号、缩进、搜索、剪贴板、持久化…
-│   │   ├── keymaps.lua      # 全局按键映射
-│   │   ├── autocmds.lua     # 自动命令：复制高亮、恢复光标、q 关辅助窗口
-│   │   └── lazy.lua         # 引导并启动插件管理器 lazy.nvim
-│   └── plugins/             # 插件声明，每个文件返回一张 spec 表，自动全部导入
-│       ├── colorscheme.lua  # 配色：tokyonight（storm 风格）
-│       ├── icons.lua        # 图标库：mini.icons，供其他插件调用
-│       ├── lualine.lua      # 状态栏：lualine
-│       ├── barbar.lua       # 顶部 buffer 栏：barbar
-│       ├── indent.lua       # 缩进参考线：indent-blankline
-│       ├── rainbow.lua      # 彩虹括号：rainbow-delimiters
-│       ├── colorizer.lua    # 颜色代码高亮：nvim-colorizer
-│       ├── alpha.lua        # 起始页：alpha-nvim
-│       ├── treesitter.lua   # 语法解析：nvim-treesitter（高亮的底座）
-│       ├── neotree.lua      # 文件树：neo-tree
-│       ├── fzf.lua          # 模糊查找：fzf-lua
-│       ├── grug-far.lua     # 全项目搜索替换：grug-far
-│       ├── todo.lua         # 待办注释高亮：todo-comments
-│       ├── flash.lua        # 光标快速跳转：flash
-│       └── whichkey.lua     # 按键提示：which-key
+│   ├── config/                # 核心原生配置（不依赖任何插件）
+│   │   ├── options.lua        # 选项：行号、缩进、搜索、剪贴板、持久化…
+│   │   ├── keymaps.lua        # 全局按键映射
+│   │   ├── autocmds.lua       # 自动命令：复制高亮、恢复光标、q 关辅助窗口
+│   │   └── lazy.lua           # 引导并启动插件管理器 lazy.nvim
+│   └── plugins/               # 插件声明，每个文件返回一张 spec 表，自动全部导入
+│       ├── colorscheme.lua    # 配色：tokyonight（storm 风格）
+│       ├── icons.lua          # 图标库：mini.icons，供其他插件调用
+│       ├── lualine.lua        # 状态栏：lualine
+│       ├── barbar.lua         # 顶部 buffer 栏：barbar
+│       ├── indent.lua         # 缩进参考线：indent-blankline
+│       ├── rainbow.lua        # 彩虹括号：rainbow-delimiters
+│       ├── colorizer.lua      # 颜色代码高亮：nvim-colorizer
+│       ├── alpha.lua          # 起始页：alpha-nvim
+│       ├── treesitter.lua     # 语法解析：nvim-treesitter（高亮的底座）
+│       ├── neotree.lua        # 文件树：neo-tree
+│       ├── fzf.lua            # 模糊查找：fzf-lua
+│       ├── grug-far.lua       # 全项目搜索替换：grug-far
+│       ├── todo.lua           # 待办注释高亮：todo-comments
+│       ├── flash.lua          # 光标快速跳转：flash
+│       ├── autopairs.lua      # 括号引号自动配对：nvim-autopairs
+│       ├── surround.lua       # 环绕符号的增删改：nvim-surround
+│       ├── mini-ai.lua        # 文本对象增强：mini.ai
+│       ├── ts-textobjects.lua # 按语法跳转 / 交换参数：nvim-treesitter-textobjects
+│       ├── autotag.lua        # HTML 标签自动闭合与联动改名：nvim-ts-autotag
+│       ├── splitjoin.lua      # 参数列表拆行 / 合行：mini.splitjoin
+│       ├── align.lua          # 按分隔符对齐：mini.align
+│       └── whichkey.lua       # 按键提示：which-key
 ├── docs/
-│   ├── notes.md             # 收件箱：随手记，定期清空归档到下面两个文件
-│   ├── cheatsheet.md        # 操作技巧速查（怎么用 Vim）
-│   └── lua-api.md           # 配置机制与 Lua API（怎么写配置）
-└── logs/                    # 临时调试日志，不进 git
+│   ├── notes.md               # 收件箱：随手记，定期清空归档到下面两个文件
+│   ├── cheatsheet.md          # 操作技巧速查（怎么用 Vim）
+│   └── lua-api.md             # 配置机制与 Lua API（怎么写配置）
+└── logs/                      # 临时调试日志，不进 git
 ```
 
 插件本体装在 `~/.local/share/nvim/lazy/`，是下载来的产物，不进这个仓库。
@@ -109,15 +119,18 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `<leader>f…` | **f**ind，查找：文件、内容、buffer、帮助、按键、待办 |
 | `<leader>s…` | **s**earch & replace，全项目搜索替换 |
 | `<leader>b…` | **b**uffer 标签栏操作 |
+| `<leader>a` `<leader>A` | **a**rgument，当前参数和后一个 / 前一个对调位置 |
 | `<leader>y` `<leader>p` | 系统剪贴板复制 / 粘贴（普通寄存器保持独立） |
 | `<leader>?` | 列出当前缓冲区里所有可用按键 |
 
-不带 leader 的：
+移动与窗口：
 
 | 按键 | 用途 |
 | --- | --- |
 | `s` | 跳到屏幕上任意位置（flash，覆盖了原生 `s`，等价写法 `cl`） |
-| `S` | 按语法结构选中（flash，覆盖了原生 `S`，等价写法 `cc`） |
+| `S` | 按语法结构选中（flash；只在普通和算子模式，覆盖了原生 `S`，等价写法 `cc`） |
+| `]m` `[m` | 跳到下 / 上一个函数定义的开头 |
+| `]M` `[M` | 跳到下 / 上一个函数定义的结尾 |
 | `<C-w>` + 方向 | 窗口间移动（Neovim 内置） |
 | `<C-方向键>` | 调整窗口大小 |
 | `<C-l>` | 清掉搜索高亮（Neovim 内置） |
@@ -126,8 +139,44 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `[q` `]q` | quickfix 列表前后跳（Neovim 内置） |
 | `gc` | 切换注释（Neovim 内置，接动作或在可视模式用） |
 
+编辑与文本对象：
+
+| 按键 | 用途 |
+| --- | --- |
+| `a` / `i` + 代号 | 文本对象，跟在 `d` `c` `y` `v` 后面用；代号见下 |
+| `aN` `iN` / `aL` `iL` | 同上，但取光标之后 / 之前的那一个，如 `ciNq` 改后面那对引号里的内容 |
+| `g[` `g]` | 跳到当前文本对象的左 / 右边界，如 `g]f` 跳到函数调用的右括号 |
+| `an` `in`（可视模式）| 按语法逐层扩大 / 缩小选区（Neovim 内置） |
+| `ys` + 动作 + 符号 | 给一段文本加环绕符号，如 `ysiw"`；`yss` 是整行 |
+| `ds` + 符号 | 删掉环绕符号，如 `ds"` |
+| `cs` + 旧 + 新 | 替换环绕符号，如 `cs"'` |
+| `yS` `ySS` `cS` | 同上三个，但让符号各占一行 |
+| `S`（可视模式） | 把选中内容包起来；`gS` 是包起来并各占一行 |
+| `<C-g>s`（插入模式）| 在光标处插入一对环绕符号 |
+| `gS` | 参数列表拆成多行 / 合成一行（普通模式） |
+| `ga` `gA` | 按分隔符对齐 / 带预览地对齐（覆盖了原生 `ga`，等价写法 `:ascii`） |
+| `<M-e>`（插入模式） | 把光标后面的内容用一对括号包住 |
+
+文本对象代号（`a` = 含边界，`i` = 不含边界）：
+
+| 代号 | 范围 |
+| --- | --- |
+| `w` `W` `s` `p` | 词 / 句 / 段（Neovim 内置） |
+| `(` `[` `{` `<` | 各种括号；用左半边如 `i(` 会顺带去掉内侧空格，用右半边 `i)` 不会 |
+| `"` `'` `` ` `` | 各种引号 |
+| `b` `q` | `b` = 任意一种括号，`q` = 任意一种引号（懒得挑的时候用） |
+| `a` | 一个函数参数：`aa` 含逗号，`ia` 只要参数本身 |
+| `f` | 一次函数调用 `foo(x, y)` |
+| `t` | 一对 HTML 标签 |
+| `?` | 现场输入左右边界，用来对付上面没覆盖的怪符号 |
+| `m` `c` `=` | 函数定义 / 类 / 赋值语句，靠 treesitter 认语法；`ci=` 就是「换掉这个变量的值」 |
+
 内置映射的完整清单：`:help default-mappings`。
 想查某个键现在归谁管，用 `<leader>fk` 或 `:verbose map <键>`。
+
+> `<M-e>` 是 Alt/Option 组合。macOS 的终端默认把 Option 当成「打特殊字符」的键，
+> 发不出 Alt 组合。Ghostty 在 `~/.config/ghostty/config` 里加一行
+> `macos-option-as-alt = true` 即可。
 
 ## 插件常用命令
 

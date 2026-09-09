@@ -176,7 +176,7 @@ diff /tmp/clean.txt /tmp/mine.txt
 
 ---
 
-## lazy.nvim 写 spec 时的四个坑
+## lazy.nvim 写 spec 时的五个坑
 
 ### 1. 懒加载用哪个事件，取决于插件靠哪个事件工作
 
@@ -224,12 +224,115 @@ init = function() vim.g.barbar_auto_setup = false end,
 opts = { ... },
 ```
 
+### 5. `opts` 里要用插件自己的函数时，必须写成函数
+
+`opts` 通常写成一张表。但如果表里的值需要调用插件自己的函数才能算出来，
+写成表就会出错 —— 表里的表达式在**读配置文件时**就求值了，那时插件还没加载：
+
+```lua
+-- ✗ 报错：模块 mini.ai 不存在
+opts = {
+  custom_textobjects = { m = require("mini.ai").gen_spec.treesitter({ ... }) },
+}
+
+-- ✓ lazy.nvim 认函数形式，会等插件加载完再调用它拿返回值
+opts = function()
+  local ai = require("mini.ai")
+  return {
+    custom_textobjects = { m = ai.gen_spec.treesitter({ ... }) },
+  }
+end,
+```
+
+判断标准很简单：`opts` 里出现了 `require("这个插件")`，就得写成函数。
+
 ### 附：`keys` 和 `lazy = false` 可以同时写
 
 `keys` 字段有两个作用：**注册按键映射**，以及**让这些键触发懒加载**。
 写了 `lazy = false` 只是取消了第二个作用，映射照常注册。
 所以插件即使不懒加载，按键也应该写在它自己的 spec 里，
 这样插件和它占用的按键是一份东西，删文件就一起没了，不会留下死键。
+
+---
+
+## 插件自己绑了按键怎么办
+
+不是所有插件都像 flash 那样「你不绑它就不占键」。
+有一类插件在 `setup()` 里、或者在自己的 `plugin/` 目录里，直接就把键绑上了。
+这时想改键、想让位给别的插件，有四种手段，按「可控程度」从高到低：
+
+### 1. 用插件给的开关关掉，然后自己绑
+
+最干净，因为结果和加载顺序无关。开关长什么样各家不同：
+
+```lua
+-- mini 系列：把映射名设成空字符串
+opts = { mappings = { toggle = "" } }        -- mini.splitjoin 的 gS
+
+-- nvim-surround：整组模式开关，而且必须在 init 里设
+-- （它的键定义在插件的 plugin/ 目录，比 config 更早执行）
+init = function() vim.g.nvim_surround_no_visual_mappings = true end,
+```
+
+`splitjoin.lua` 用的就是第一种：插件默认把 `gS` 同时绑在普通和可视两个模式上，
+可视模式那个和 nvim-surround 撞车，而它没法只关一半，于是整个关掉、
+再用 `keys` 补回普通模式那一个。
+
+### 2. 重绑到插件的 `<Plug>` 映射
+
+插件如果暴露了 `<Plug>(xxx)` 形式的入口，直接在 `keys` 里指过去。
+好处是能顺便写上中文 `desc`，which-key 里看到的就是中文：
+
+```lua
+keys = {
+  { "ys", "<Plug>(nvim-surround-normal)", desc = "给一段文本加环绕符号" },
+}
+```
+
+### 3. 只写按键、不写动作（纯触发）
+
+`keys` 条目里省掉动作那一项，lazy.nvim 的行为是：按下时先加载插件，
+让插件在 `setup()` 里绑好自己的键，然后把这个键**重新发一遍**，交给插件的映射处理。
+
+```lua
+keys = {
+  { "ga", mode = { "n", "x" }, desc = "按分隔符对齐" },
+}
+```
+
+适合插件的按键实现依赖内部私有状态、外面复刻不出来的情况（`align.lua` 就是）。
+代价是加载之后 `desc` 会被插件自己的英文说明覆盖掉。
+
+### 4. 什么都不做，靠加载顺序 —— 不要这样
+
+两个插件抢同一个键时，后加载的赢。这能「碰巧」跑通，
+但加载时机会随懒加载触发条件变化，哪天按键就换主人了，还很难查。
+
+### 另外：缓冲区局部映射永远赢过全局映射
+
+这条和插件无关，是 Vim 的规则，但排查「为什么只有这种文件里不好使」时必用。
+Neovim 自带的 ftplugin 会给特定文件类型绑缓冲区局部的键，例如
+`ftplugin/python.vim` 绑了 `]m` / `[m`，`ftplugin/markdown.vim` 绑了 `[[` / `]]`。
+全局绑同样的键，在这些文件里不会生效。
+
+```vim
+" 哪些内置 ftplugin 绑了键（这些都认 no_plugin_maps 开关）。
+" 要在 Neovim 里执行 —— $VIMRUNTIME 是 Neovim 自己设的环境变量，
+" 普通终端里没有这个值。
+:!grep -rl no_plugin_maps $VIMRUNTIME/ftplugin/
+
+" 想知道某个键在当前文件里归谁管，这条最直接（会打印定义它的文件和行号）
+:verbose map ]m
+```
+
+想整体关掉：`vim.g.no_plugin_maps = true`；想只关一种：`vim.g.no_python_maps = true`。
+
+⚠ 这两个开关是用 `exists()` 判断的，只看变量**存不存在**，不看值。
+写 `vim.g.no_python_maps = false` 一样会把映射关掉。不想关就别设这个变量
+（要撤销得写 `vim.g.no_python_maps = nil`）。
+
+本配置两个都没设 —— `ts-textobjects.lua` 里的 `]m` 在 Python 文件中会让位给内置那份，
+但两者做的是同一件事，感觉不出差别，不值得为它把一整套 ftplugin 映射关掉。
 
 ---
 
@@ -275,8 +378,21 @@ end
 确认某个缓冲区到底有没有用上 treesitter：
 
 ```vim
-:lua =vim.treesitter.highlighter.active[0] ~= nil
+:Inspect
 ```
+
+把光标停在有颜色的字符上执行，列出的高亮组里出现 `@` 开头的（`@keyword.lua` 之类）
+就说明是 treesitter 在高亮；只有 `Identifier`、`Statement` 这种没有 `@` 的老组名，
+说明还在用正则高亮。
+
+想要一个 true/false 的答案：
+
+```vim
+:lua =vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()] ~= nil
+```
+
+⚠ 这张表的键是**真实缓冲区号**，不接受 `0` 这个「当前缓冲区」的简写 ——
+很多 Neovim API 认 `0`，但它只是一张普通 Lua 表，写 `active[0]` 永远得到 `false`。
 
 ---
 

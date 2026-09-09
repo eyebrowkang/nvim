@@ -64,8 +64,8 @@ return {
       -- Neovim 0.12 只在四个内置的 ftplugin 文件里主动调用 vim.treesitter.start()
       -- （lua / markdown / query / help），除此之外没有任何通用机制。
       -- 也就是说上面装的 python、yaml 等等，不写这段就一直用老的正则高亮。
-      -- 确认办法：打开一个 .py 文件执行
-      --   :lua =vim.treesitter.highlighter.active[0] ~= nil
+      -- 确认办法：打开一个 .py 文件，把光标停在有颜色的字上执行 :Inspect，
+      -- 列出的高亮组里有 @ 开头的（@function.python 之类）就是 treesitter 在管。
       vim.api.nvim_create_autocmd("FileType", {
         desc = "为装了解析器的文件类型开启 treesitter 高亮",
         callback = function(args)
