@@ -1,0 +1,13 @@
+# 临时调试日志目录（例如 nvim -V15logs/debug.log 的输出）
+# 只忽略里面的内容，保留目录本身，这样克隆下来 logs/ 就已经存在，
+# nvim 写日志时不会因为目录不存在而失败。
+logs/*
+!logs/.gitkeep
+
+# macOS Finder 生成的目录元数据
+.DS_Store
+
+# 注意：以后接入插件管理器时，锁文件要提交进仓库，不要加到这里。
+# 它锁定每个插件的具体 commit，是「换台机器复现同一套环境」的关键。
+#   - Neovim 内置的 vim.pack → nvim-pack-lock.json（就在本目录下）
+#   - lazy.nvim             → lazy-lock.json
