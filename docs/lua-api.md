@@ -176,6 +176,71 @@ diff /tmp/clean.txt /tmp/mine.txt
 
 ---
 
+## lazy.nvim 写 spec 时的三个坑
+
+### 1. 懒加载用哪个事件，取决于插件靠哪个事件工作
+
+打开一个文件时，事件顺序是 **`FileType` 在前，`BufReadPost` 在后**。
+
+很多插件是靠自己注册的 `FileType` 自动命令挂到缓冲区上的。
+如果用 `event = "BufReadPost"` 懒加载这种插件，它被加载出来时 `FileType`
+已经放过去了，它的自动命令就永远错过当前这个缓冲区，表现为
+「开第一个文件没效果，手动 `:e` 一下或切个文件类型才出现」。
+
+改用 `event = "FileType"` 就好：lazy.nvim 把插件加载完之后，
+会把刚才触发的那个事件原样重新广播一次，插件自己的处理函数就接上了。
+
+确认事件顺序的办法：
+
+```bash
+nvim --headless -c 'edit some.lua' -c 'qa!' -V15/tmp/ev.log
+grep -n "Executing FileType\|Executing BufReadPost" /tmp/ev.log
+```
+
+### 2. 模块名和仓库名对不上时要写 `main`
+
+lazy.nvim 从仓库名推断该在哪个模块上调 `setup()`。推断规则大致是去掉
+`nvim-` 前缀和 `.nvim` / `.lua` 后缀，所以 `nvim-colorizer.lua` → `colorizer` 能猜中，
+但 `indent-blankline.nvim` 的模块其实叫 `ibl`，猜不中，必须显式写 `main = "ibl"`。
+
+### 3. 不是每个插件都有 `setup()`
+
+「装插件先调 `setup()`」只是社区惯例，不是规矩。
+例如 rainbow-delimiters 读的是全局变量 `vim.g.rainbow_delimiters`，根本没有 `setup()`；
+给它写 `opts` 会让 lazy.nvim 去调用一个不存在的函数。装之前翻一眼 README。
+
+反过来，光有 `setup()` 也不一定够 —— 配色插件还得再执行一次 `:colorscheme` 才真正生效，
+所以 `colorscheme.lua` 用的是 `config` 而不是 `opts`。
+
+---
+
+## 验证插件效果时，别用脚本驱动光标
+
+很多插件（缩进参考线的作用域高亮、彩虹括号等）是在**真实重绘和真实光标移动**时
+才更新的。在 `vim.defer_fn` 里用 `vim.cmd("normal! 10G")` 挪光标，
+产生的事件流和真人按键不一样，插件可能完全不刷新，看起来像「功能坏了」。
+
+可靠的做法是让另一个 Neovim 通过 RPC 把**真实按键**送进去：
+
+```bash
+# 终端 A：在真实终端里启动，开一个 socket
+nvim --listen /tmp/nvim.sock file.lua
+
+# 终端 B：送真实按键进去，再让它把结果写到文件
+nvim --server /tmp/nvim.sock --remote-send 'jjjj'
+nvim --server /tmp/nvim.sock --remote-send ':luafile /tmp/dump.lua<CR>'
+```
+
+看「屏幕上到底画了什么」用 `vim.fn.screenstring(行, 列)`，
+它读的是渲染完成后的屏幕内容，比猜插件内部状态可靠。
+
+查高亮时注意：extmark 的 `hl_group` **可能是一组高亮组而不是一个字符串**，
+虚拟文本还挂在 `virt_text` 里而不是 `hl_group` 上；只取第一个会漏掉真正想找的那个。
+另外 `nvim_get_namespaces()` 列不出匿名命名空间（`nvim_create_namespace("")`），
+统计缓冲区里全部高亮要用 `nvim_buf_get_extmarks(buf, -1, ...)`，`-1` 表示所有命名空间。
+
+---
+
 ## 已改名的 API 对照表
 
 网上搜到的资料里常见左列的写法，本仓库统一用右列。

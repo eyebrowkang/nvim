@@ -33,11 +33,12 @@ opt.scrolloff = 8         -- 上下滚动时，光标距离屏幕上下边缘至
 opt.sidescrolloff = 8     -- 左右滚动时，光标距离屏幕左右边缘至少保留 8 列
 opt.winborder = "rounded" -- 所有浮动窗口（LSP 悬浮文档、诊断浮窗等）默认用圆角边框
 
--- showmode 控制左下角的 -- INSERT -- 提示。
--- 目前没装状态栏插件，Neovim 自带的 statusline 并不显示模式，
--- 所以这里保持 true，否则完全看不出自己在哪个模式。
--- 等以后装了 lualine / mini.statusline 之类接管模式显示，再改成 false 去掉重复。
-opt.showmode = true
+-- showmode 控制最底下那行的 -- INSERT -- 提示。
+-- 关掉：模式已经由 lualine 在状态栏左端显示（lua/plugins/lualine.lua），
+-- 开着会在屏幕最下方重复一次，还会挤掉命令行区域的其他提示。
+-- 注意这是「插件接管了原生功能」，去掉 lualine 就要把它改回 true，
+-- 否则 Neovim 自带的 statusline 不显示模式，会完全看不出自己在哪个模式。
+opt.showmode = false
 
 -- ====================================================================
 -- 3. 缩进与排版
