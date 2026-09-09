@@ -34,6 +34,7 @@
 │       ├── colorscheme.lua  # 配色：tokyonight（storm 风格）
 │       ├── icons.lua        # 图标库：mini.icons，供其他插件调用
 │       ├── lualine.lua      # 状态栏：lualine
+│       ├── barbar.lua       # 顶部 buffer 栏：barbar
 │       ├── indent.lua       # 缩进参考线：indent-blankline
 │       ├── rainbow.lua      # 彩虹括号：rainbow-delimiters
 │       ├── colorizer.lua    # 颜色代码高亮：nvim-colorizer
