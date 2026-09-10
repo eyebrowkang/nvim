@@ -78,18 +78,24 @@ return {
         -- 六个区段，从左到右依次排布：a b c ...(中间留白)... x y z。
         -- 每个区段是一个组件列表，删掉某项就是不显示它。
         sections = {
-          lualine_a = { "mode" },                       -- 当前模式：NORMAL / INSERT / VISUAL…
+          lualine_a = { "mode" }, -- 当前模式：NORMAL / INSERT / VISUAL…
           lualine_b = { "branch", "diff", "diagnostics" }, -- git 分支、增删改统计、诊断计数
-          lualine_c = { "filename" },                   -- 文件名（相对路径 + 修改/只读标记）
+          lualine_c = { "filename" }, -- 文件名（相对路径 + 修改/只读标记）
           lualine_x = {
             -- 组件除了写成 "名字" 这种内置组件，也可以直接写一个函数，
             -- 显示的就是它的返回值。下面两个都是这样。
-            function() return lsp_progress end,
+            function()
+              return lsp_progress
+            end,
             { lsp_clients, icon = "" }, -- 图标是 Nerd Font 的齿轮，豆腐块的话删掉这项
-            "encoding", "fileformat", "filetype", -- 编码、换行符风格、文件类型
+
+            -- 下面三个是文件本身的属性：编码、换行符风格、文件类型。
+            "encoding",
+            "fileformat",
+            "filetype",
           },
-          lualine_y = { "progress" },                   -- 在文件中的百分比位置
-          lualine_z = { "location" },                   -- 行:列
+          lualine_y = { "progress" }, -- 在文件中的百分比位置
+          lualine_z = { "location" }, -- 行:列
         },
 
         -- 非当前窗口用的状态栏。globalstatus = true 时用不上，

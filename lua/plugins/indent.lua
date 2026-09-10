@@ -37,12 +37,12 @@ return {
       exclude = {
         -- 这些缓冲区里不画线：它们不是代码，画了只是噪音。
         filetypes = {
-          "help",        -- :help 文档
-          "lazy",        -- :Lazy 面板
+          "help", -- :help 文档
+          "lazy", -- :Lazy 面板
           "checkhealth", -- :checkhealth 报告
-          "alpha",       -- 起始页
-          "man",         -- man 手册
-          "qf",          -- quickfix / location 列表
+          "alpha", -- 起始页
+          "man", -- man 手册
+          "qf", -- quickfix / location 列表
         },
       },
     },

@@ -45,18 +45,40 @@ return {
       -- 完整可选列表见插件仓库的 SUPPORTED_LANGUAGES.md，或用 :TSInstall <Tab> 补全。
       require("nvim-treesitter").install({
         -- 配置和脚本
-        "bash", "lua", "luadoc", "vim", "vimdoc", "query",
+        "bash",
+        "lua",
+        "luadoc",
+        "vim",
+        "vimdoc",
+        "query",
+
         -- 标记与数据格式
         -- 没有 jsonc：带注释的 json 用的就是 json 解析器（可以自己验证：
         -- :lua =vim.treesitter.language.get_lang("jsonc") 会打印 json）。
         -- 写上去的话 :TSUpdate 每次都会警告 "skipping unsupported language"。
-        "markdown", "markdown_inline", "json", "yaml", "toml",
+        "markdown",
+        "markdown_inline",
+        "json",
+        "yaml",
+        "toml",
+
         -- 网页
-        "html", "css", "javascript", "typescript", "tsx",
+        "html",
+        "css",
+        "javascript",
+        "typescript",
+        "tsx",
+
         -- 其他常用
-        "c", "python", "regex", "diff",
+        "c",
+        "python",
+        "regex",
+        "diff",
+
         -- git 相关文件
-        "git_config", "gitcommit", "gitignore",
+        "git_config",
+        "gitcommit",
+        "gitignore",
       })
 
       -- 装了解析器 ≠ 高亮就开了，这两件事在 main 分支上是分开的。

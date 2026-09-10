@@ -1,0 +1,49 @@
+# stylua.toml —— Lua 代码的格式化规则
+#
+# 按 <leader>cf 时 conform 调用的就是 stylua（见 lua/plugins/conform.lua）。
+# stylua 从被格式化的文件所在目录一路往上找这个文件（.stylua.toml 是同样效力的别名），
+# 找到第一个就用，一个都找不到才用它内置的默认值。
+# 所以这份规则只覆盖本仓库，去格式化别人的项目时不会被带过去。
+#
+# 改完这个文件不用重启 Neovim：stylua 是每次格式化新起一个进程，自己会重读配置。
+#
+# ⚠ 这个文件一旦存在，stylua 就完全不看 .editorconfig 了。
+#   两边都写会让人以为 .editorconfig 在起作用，实际被无视。
+#
+# 单独某一段不想被重排（比如手工排版的对齐表格），在它上面加一行注释：
+#   -- stylua: ignore          只跳过紧跟着的那一个语句
+#   -- stylua: ignore start    从这里开始跳过
+#   -- stylua: ignore end      到这里为止
+# 本仓库目前一处都没用 —— 能不用就不用，用多了等于没有统一格式。
+
+# 缩进用空格，一级 2 格。
+# stylua 的默认值是 tab + 宽度 4，和本仓库通篇 2 空格对不上 ——
+# 不写这两行，格式化一次就会把整个文件改成 tab 缩进。
+indent_type = "Spaces"
+indent_width = 2
+
+# 一行最多排到多少列，超过了 stylua 才会把参数列表、表项拆成多行。
+# 120 就是 stylua 的默认值，这里显式写出来：它决定整个仓库的换行长相，
+# 属于「一改就全仓库重排」的值，留成隐式的容易被忘掉、也不好回溯当初为什么是这样。
+#
+# ⚠ 它只管代码，不管注释。注释写多长 stylua 都原样保留，不会替你折行 ——
+#   本仓库的注释是手动控制在 80 列左右的，那是人的约定，不是工具在管。
+column_width = 120
+
+# 字符串统一双引号，只有内容里本来就含双引号时才退回单引号。
+# 这是默认值，显式写出来是为了表明：本仓库不接受两种引号随意混用。
+quote_style = "AutoPreferDouble"
+
+# 单个字符串/表参数的调用也要带括号：写 require("x") 而不是 require "x"。
+# 也是默认值。Lua 语法允许省略，但省掉之后 require "x" 读起来像两个不相干的词，
+# 而且和 require("x").setup() 这类非省不可的写法不一致。
+call_parentheses = "Always"
+
+# 没设 line_endings：默认 "Unix"（\n）。跨平台就该统一成这个，Windows 上也一样。
+#
+# 没设 collapse_simple_statement：默认 "Never"，即 `if x then return end` 这种
+#   挤在一行的写法会被拆成三行。保持拆开 —— 单行 if 里的 return 扫读时很容易漏看。
+#
+# 没设 [sort_requires]：默认不开。开了它会把文件开头连续的 require 按字母排序，
+#   而 require 是有副作用的（模块在被 require 的那一刻就执行了），
+#   重排有可能改变加载顺序。为了整齐冒这个险不划算。

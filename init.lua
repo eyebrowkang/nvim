@@ -19,7 +19,7 @@ vim.loader.enable()
 -- 之后再改 mapleader 也不会回头修正已经定义好的映射。
 -- 顺序搞反的结果是：所有 <leader> 映射都会变成默认的反斜杠 \ 触发。
 -- 全仓库只在这里设置一次，其他文件不要重复设置。
-vim.g.mapleader = " "      -- 全局 leader：空格键
+vim.g.mapleader = " " -- 全局 leader：空格键
 vim.g.maplocalleader = " " -- 局部 leader（只在特定 filetype 生效的映射用它）：同样是空格
 
 -- ====================================================================
@@ -28,8 +28,8 @@ vim.g.maplocalleader = " " -- 局部 leader（只在特定 filetype 生效的映
 -- 顺序：选项 → 按键 → 自动命令。
 -- require("config.options") 对应文件 lua/config/options.lua，
 -- Lua 里的点号会被翻译成路径分隔符，并在 runtimepath 的 lua/ 目录下查找。
-require("config.options")  -- 基础选项：行号、缩进、搜索、剪贴板、持久化…
-require("config.keymaps")  -- 全局快捷键：窗口导航、可视模式行移动…
+require("config.options") -- 基础选项：行号、缩进、搜索、剪贴板、持久化…
+require("config.keymaps") -- 全局快捷键：窗口导航、可视模式行移动…
 require("config.autocmds") -- 自动命令：复制高亮、恢复光标位置、q 关闭辅助窗口
 
 -- ====================================================================

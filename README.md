@@ -79,6 +79,7 @@ sudo apt install ripgrep fzf build-essential python3-venv python3-pip
 .
 ├── init.lua                   # 入口：开缓存 → 定 leader → 按顺序 require
 ├── lazy-lock.json             # 插件版本锁文件，由 lazy.nvim 生成，必须进 git
+├── stylua.toml                # Lua 格式化规则（<leader>cf 调 stylua 时读它）
 ├── lua/
 │   ├── config/                # 核心原生配置（不依赖任何插件）
 │   │   ├── options.lua        # 选项：行号、缩进、搜索、剪贴板、持久化…
@@ -334,6 +335,11 @@ Git 与终端：
   就不要再映射一遍。已有的内置能力清单见 [docs/cheatsheet.md](docs/cheatsheet.md)。
 - **`docs/notes.md` 是收件箱**，随手往里丢。定期分类归档：
   操作技巧 → `cheatsheet.md`，配置写法/API/机制 → `lua-api.md`，归档后清空 notes。
+- **Lua 代码风格交给 stylua**，规则写在根目录的 `stylua.toml` 里（2 空格、双引号、120 列）。
+  排版上不要和它较劲：手工对齐的行尾注释会被它拆掉，多个短项挤在一行也会被拆成每行一个。
+  想让注释管住一组项，把注释写在这组的**上面**，别写在行尾——
+  拆行之后行尾注释只会跟着最后一项，读起来就变成假的了。
+  改完按 `<leader>cf` 或跑 `stylua .` 统一一遍。
 - **`logs/` 不进 git**，只保留 `.gitkeep` 占位，用来放临时调试输出。
 - **`lazy-lock.json` 要进 git**：它记录每个插件锁定的 commit，
   是换机器复现出同一套环境的依据。插件装完/更新完记得连它一起提交。

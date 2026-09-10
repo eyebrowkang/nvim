@@ -24,13 +24,13 @@ vim.g.loaded_ruby_provider = 0
 -- ====================================================================
 -- 2. 外观与显示
 -- ====================================================================
-opt.number = true         -- 显示绝对行号
+opt.number = true -- 显示绝对行号
 opt.relativenumber = true -- 同时显示相对行号：配合 5j / 10k 这类相对跳转，不用心算
-opt.cursorline = true     -- 高亮光标所在行，长文件里更容易找到自己
-opt.signcolumn = "yes"    -- 始终保留左侧标记列。设成 "auto" 会在出现 Git/诊断图标时才展开，导致画面横向抖动
-opt.termguicolors = true  -- 开启 24-bit 真彩色。Neovim 0.10+ 已能自动探测终端并开启，这里显式声明兜底
-opt.scrolloff = 8         -- 上下滚动时，光标距离屏幕上下边缘至少保留 8 行
-opt.sidescrolloff = 8     -- 左右滚动时，光标距离屏幕左右边缘至少保留 8 列
+opt.cursorline = true -- 高亮光标所在行，长文件里更容易找到自己
+opt.signcolumn = "yes" -- 始终保留左侧标记列。设成 "auto" 会在出现 Git/诊断图标时才展开，导致画面横向抖动
+opt.termguicolors = true -- 开启 24-bit 真彩色。Neovim 0.10+ 已能自动探测终端并开启，这里显式声明兜底
+opt.scrolloff = 8 -- 上下滚动时，光标距离屏幕上下边缘至少保留 8 行
+opt.sidescrolloff = 8 -- 左右滚动时，光标距离屏幕左右边缘至少保留 8 列
 opt.winborder = "rounded" -- 所有浮动窗口（LSP 悬浮文档、诊断浮窗等）默认用圆角边框
 
 -- showmode 控制最底下那行的 -- INSERT -- 提示。
@@ -44,10 +44,10 @@ opt.showmode = false
 -- 3. 缩进与排版
 -- ====================================================================
 opt.expandtab = true -- 按 Tab 键插入空格而不是制表符
-opt.tabstop = 4      -- 一个制表符在屏幕上显示为 4 列宽
-opt.shiftwidth = 4   -- 每一级缩进（>> 、<< 、自动缩进）的宽度
-opt.softtabstop = 4  -- 插入模式下 Tab/退格 按「4 个空格为一格」来进退
-opt.wrap = false     -- 关闭软折行：超长行横向滚动，代码对齐关系不被打乱
+opt.tabstop = 4 -- 一个制表符在屏幕上显示为 4 列宽
+opt.shiftwidth = 4 -- 每一级缩进（>> 、<< 、自动缩进）的宽度
+opt.softtabstop = 4 -- 插入模式下 Tab/退格 按「4 个空格为一格」来进退
+opt.wrap = false -- 关闭软折行：超长行横向滚动，代码对齐关系不被打乱
 
 -- 这里刻意不开 smartindent。它是 Vim 时代的粗糙 C 风格缩进，有两个经典坑：
 --   1) 在 Python 里行首输入 # 会被强制顶到第 0 列；
@@ -60,9 +60,9 @@ opt.wrap = false     -- 关闭软折行：超长行横向滚动，代码对齐�
 -- 4. 搜索
 -- ====================================================================
 opt.ignorecase = true -- 搜索时忽略大小写
-opt.smartcase = true  -- 但只要你输入了大写字母，就自动切回区分大小写（必须和 ignorecase 一起用才有效）
-opt.hlsearch = true   -- 高亮所有匹配项（Neovim 默认已开启）
-opt.incsearch = true  -- 边输入边高亮预览第一个匹配（Neovim 默认已开启）
+opt.smartcase = true -- 但只要你输入了大写字母，就自动切回区分大小写（必须和 ignorecase 一起用才有效）
+opt.hlsearch = true -- 高亮所有匹配项（Neovim 默认已开启）
+opt.incsearch = true -- 边输入边高亮预览第一个匹配（Neovim 默认已开启）
 
 -- ====================================================================
 -- 5. 剪贴板与鼠标

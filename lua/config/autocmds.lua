@@ -71,9 +71,9 @@ autocmd("BufReadPost", {
 autocmd("FileType", {
   group = augroup("CloseWithQ", { clear = true }),
   pattern = {
-    "help",        -- :help 帮助文档
-    "man",         -- :Man 手册页
-    "qf",          -- quickfix / location list
+    "help", -- :help 帮助文档
+    "man", -- :Man 手册页
+    "qf", -- quickfix / location list
     "checkhealth", -- :checkhealth 体检报告
   },
   callback = function(args)

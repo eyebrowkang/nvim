@@ -24,10 +24,7 @@ local function toggle_lazygit()
   -- lazygit 是外部命令，装没装是运行时才知道的事。
   -- 不检查的话会开出一个只写着 "command not found" 的浮窗，看不出是缺什么。
   if vim.fn.executable("lazygit") == 0 then
-    vim.notify(
-      "没有找到 lazygit 命令。安装：brew install lazygit / apt install lazygit",
-      vim.log.levels.WARN
-    )
+    vim.notify("没有找到 lazygit 命令。安装：brew install lazygit / apt install lazygit", vim.log.levels.WARN)
     return
   end
 

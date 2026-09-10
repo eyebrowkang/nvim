@@ -20,14 +20,14 @@ return {
 
       user_default_options = {
         -- 识别哪些写法。关掉用不上的可以少一点误判和开销。
-        names = false,     -- 关掉英文颜色名。开着的话 lua 里的变量 red、代码里的 tan 都会被染色，很吵
-        RGB = true,        -- #RGB      三位十六进制简写
-        RRGGBB = true,     -- #RRGGBB   六位十六进制
-        RRGGBBAA = true,   -- #RRGGBBAA 带 alpha 通道的八位
-        rgb_fn = true,     -- rgb() / rgba() 函数写法
-        hsl_fn = true,     -- hsl() / hsla() 函数写法
-        css = false,       -- 一次性打开上面所有 CSS 相关识别（含 names），这里逐项控制，不用它
-        css_fn = false,    -- 一次性打开所有函数写法，同上
+        names = false, -- 关掉英文颜色名。开着的话 lua 里的变量 red、代码里的 tan 都会被染色，很吵
+        RGB = true, -- #RGB      三位十六进制简写
+        RRGGBB = true, -- #RRGGBB   六位十六进制
+        RRGGBBAA = true, -- #RRGGBBAA 带 alpha 通道的八位
+        rgb_fn = true, -- rgb() / rgba() 函数写法
+        hsl_fn = true, -- hsl() / hsla() 函数写法
+        css = false, -- 一次性打开上面所有 CSS 相关识别（含 names），这里逐项控制，不用它
+        css_fn = false, -- 一次性打开所有函数写法，同上
 
         -- 怎么显示：
         --   "background" 用该颜色作背景，文字自动取黑或白保证可读 —— 最直观
