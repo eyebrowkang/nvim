@@ -104,9 +104,11 @@ return {
         end,
       })
 
-      -- 这里没开 treesitter 折叠和 treesitter 缩进，都是刻意的：
-      --   折叠   需要在 ftplugin 里设 foldexpr，而且折叠本身还没配，等要用时再说
-      --   缩进   插件文档自己标注为 experimental，不适合当默认
+      -- 折叠不在这里配。foldexpr 是全局选项，和这个插件没有依赖关系 ——
+      -- lua/config/options.lua 第 10 节把它设成了 vim.treesitter.foldexpr()。
+      -- 上面这段 autocmd 让解析器挂上，折叠自然就有了；没装解析器的文件不折叠也不报错。
+      --
+      -- 这里没开 treesitter 缩进：插件文档自己标注为 experimental，不适合当默认。
     end,
   },
 }

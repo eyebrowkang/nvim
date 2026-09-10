@@ -27,6 +27,31 @@ return {
     -- 懒加载：用到才载入。两条触发路径都要写。
     cmd = "FzfLua",
 
+    -- 第三条触发路径，给 vim.ui.select 用（下面 opts.ui_select 那一项）。
+    -- init 里的代码在 Neovim 启动时就跑，插件本身仍然没载入。
+    --
+    -- 为什么需要这一段：ui_select 是在插件的 setup() 里生效的，
+    -- 而懒加载意味着 setup() 要等到第一次按 <leader>f 开头的键才跑。
+    -- 在那之前所有的选择菜单还是内置的样子。
+    -- 这里先在 vim.ui.select 上放一个假的顶着，第一次真有人要选东西时，
+    -- 它把插件叫醒，再把这次调用转交出去。
+    init = function()
+      local builtin = vim.ui.select
+
+      vim.ui.select = function(...)
+        -- 先把内置的还回去，再加载插件。
+        -- 顺序不能反：fzf-lua 注册时会把「当前的 vim.ui.select」存起来当作原始实现
+        -- （给 :FzfLua deregister_ui_select 还原用），这里晚一步还，
+        -- 它存下的就是这个临时函数，而不是内置的那个。
+        vim.ui.select = builtin
+
+        -- 同步加载，返回时 setup() 已经跑完，vim.ui.select 已经是 fzf-lua 的了。
+        require("lazy").load({ plugins = { "fzf-lua" } })
+
+        return vim.ui.select(...)
+      end
+    end,
+
     keys = {
       -- ---- 找东西：统一放在 <leader>f 下（f = find）----
 
@@ -67,6 +92,18 @@ return {
       -- 其他可选：default（分离的两个框）、ivy（贴在屏幕底部）、telescope（模仿 telescope 布局）。
       -- 换着试一下就知道喜欢哪个：:lua require("fzf-lua").setup({"ivy"})
       "border-fused",
+
+      -- 接管 vim.ui.select —— 这是 Neovim 提供给插件的「请用户从列表里选一个」接口。
+      -- 用到它的地方比想象中多：LSP 的代码操作（<leader>ca）、重命名时的多个候选、
+      -- gitsigns 之类插件的各种选项菜单，走的都是这一个函数。
+      -- 内置实现是 inputlist()：在命令行下面列一串「1. xxx 2. xxx」等你敲数字，
+      -- 项一多就翻不动、也没法搜。换成 fzf 之后这些菜单和 <leader>ff 长得一样，能打字过滤。
+      --
+      -- ⚠ 值必须是 {} 而不是 true。网上大量写法是 ui_select = true，
+      --   插件已经把它标为弃用（会打印一条 deprecated 警告，2027 年 1 月移除）。
+      --   空表的意思是「启用，全部用默认外观」；想单独调这个菜单的大小、位置，
+      --   就往这个表里填 winopts，不会影响其他查找窗口。
+      ui_select = {},
 
       winopts = {
         -- 和 lazy.nvim 面板（lua/config/lazy.lua 里设的 border = "rounded"）保持一致。

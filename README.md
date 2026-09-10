@@ -82,7 +82,7 @@ sudo apt install ripgrep fzf build-essential python3-venv python3-pip
 ├── stylua.toml                # Lua 格式化规则（<leader>cf 调 stylua 时读它）
 ├── lua/
 │   ├── config/                # 核心原生配置（不依赖任何插件）
-│   │   ├── options.lua        # 选项：行号、缩进、搜索、剪贴板、持久化…
+│   │   ├── options.lua        # 选项：行号、缩进、搜索、剪贴板、持久化、折叠、消息界面…
 │   │   ├── keymaps.lua        # 全局按键映射
 │   │   ├── autocmds.lua       # 自动命令：复制高亮、恢复光标、q 关辅助窗口
 │   │   └── lazy.lua           # 引导并启动插件管理器 lazy.nvim
@@ -166,6 +166,8 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `<C-w>` + 方向 | 窗口间移动（Neovim 内置） |
 | `<C-方向键>` | 调整窗口大小 |
 | `<C-l>` | 清掉搜索高亮（Neovim 内置） |
+| `za` `zR` `zM` | 折叠：切换当前 / 全展开 / 全折起（Neovim 内置，按语法树分块） |
+| `g<` | 调出最近的消息全文（Neovim 内置） |
 | `[b` `]b` | 上一个 / 下一个 buffer（Neovim 内置） |
 | `[q` `]q` | quickfix 列表前后跳（Neovim 内置） |
 | `gc` | 切换注释（Neovim 内置，接动作或在可视模式用） |

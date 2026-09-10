@@ -176,7 +176,7 @@ diff /tmp/clean.txt /tmp/mine.txt
 
 ---
 
-## lazy.nvim 写 spec 时的六个坑
+## lazy.nvim 写 spec 时的七个坑
 
 ### 1. 懒加载用哪个事件，取决于插件靠哪个事件工作
 
@@ -264,6 +264,38 @@ cmd = { "ToggleTerm", "TermExec", "TermSelect" },      -- 命令也能用了
 
 顺带一提：如果只想在文档里写命令、自己平时只按键，那也得写 `cmd`，
 否则 README 里的命令是假的。
+
+### 7. 插件要顶替一个全局函数时，懒加载得自己搭个桥
+
+有的插件的价值在于**替换掉 Neovim 的某个全局函数**，最典型的是
+`vim.ui.select`（「请用户从列表里选一个」的统一接口）和 `vim.ui.input`。
+
+这类接管发生在插件的 `setup()` 里。而懒加载的意思正是 `setup()` 还没跑，
+所以只写 `opts = { ui_select = {} }` 是不够的：在第一次按下这个插件的快捷键之前，
+所有选择菜单还是 Neovim 内置的样子（内置实现是 `inputlist()`，
+在命令行下面列一串「1. xxx 2. xxx」等你敲数字）。
+
+`cmd` / `keys` 也帮不上忙 —— 触发的是别人调用 `vim.ui.select`，不是敲命令或按键。
+办法是在 `init`（启动时就跑，插件仍然不加载）里放一个占位函数：
+
+```lua
+init = function()
+  local builtin = vim.ui.select
+
+  vim.ui.select = function(...)
+    vim.ui.select = builtin                        -- 1. 先把内置的还回去
+    require("lazy").load({ plugins = { "fzf-lua" } })  -- 2. 同步加载，setup() 跑完
+    return vim.ui.select(...)                      -- 3. 此时它已经是插件的了
+  end
+end,
+```
+
+第 1 步和第 2 步的顺序不能反。插件注册时通常会把「当前的 `vim.ui.select`」
+存下来当作原始实现（留给「取消接管」用）；晚一步还原，它存下的就是这个临时函数。
+
+验证办法（真实终端里，不能用 headless）：启动后直接
+`:lua vim.ui.select({"a","b"}, {}, function() end)`，
+弹出来的是 fzf 的窗口而不是命令行里的数字列表，就说明桥搭通了。
 
 ### 附：`keys` 和 `lazy = false` 可以同时写
 
@@ -590,9 +622,14 @@ nvim --server /tmp/nvim.sock --remote-send ':luafile /tmp/dump.lua<CR>'
 | `vim.loop` | `vim.uv` | 0.10 |
 | `vim.lsp.buf_get_clients()` | `vim.lsp.get_clients()` | 0.10 |
 | `lspconfig.lua_ls.setup{}` | `vim.lsp.config()` + `vim.lsp.enable()` | 0.11 |
+| `require("vim._extui")` | `require("vim._core.ui2")` | 0.12 |
 
 曾用名通常还留着一个废弃别名，能跑，但会被 `:checkhealth vim.deprecated` 标出来，
 并且计划在未来版本移除。
+
+⚠ 最后那行是例外：`vim._extui` 是下划线开头的内部模块，没有废弃别名，直接就没了。
+照抄网上的 `require("vim._extui")` 会得到 `module not found`，
+所以本仓库把它包在 `pcall` 里（见 `lua/config/options.lua` 第 11 节）。
 
 ⚠ 插件自己的 API 改版没有这层保护，是直接删的。
 比如 mason-lspconfig v2 删掉了 `setup_handlers()`，照着旧教程写会直接报错。
