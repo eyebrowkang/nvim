@@ -33,6 +33,8 @@
 | `node` `npm` | mason 装的大部分语言服务器 | 那几个服务器装不上，其余照常 |
 | `python3` + venv | mason 装 basedpyright 时要建虚拟环境 | Python 的类型检查装不上 |
 | `lazygit` | `<leader>gg` 的 git 操作界面 | 按 `<leader>gg` 弹一条提示，别的不受影响 |
+| `ansible` | ansible-language-server 查模块文档 | Ansible 文件按 `K` 查不到模块说明 |
+| `ansible-lint` | 同上，它是服务器的检查后端 | Ansible 文件没有诊断，其余功能照常 |
 
 「按语法」的那些功能都建立在解析器之上：某个语言没装解析器时，
 它的文件里 `am` / `ic` / `i=` / `]m` / `S` 会不生效，其余按键照常。
@@ -44,8 +46,12 @@ mason 会把 [lua/plugins/lsp.lua](lua/plugins/lsp.lua) 里 `ensure_installed` �
 但**格式化器和 linter 不是语言服务器，`ensure_installed` 管不着**，要手动装一次：
 
 ```vim
-:MasonInstall stylua prettierd markdownlint-cli2
+:MasonInstall stylua prettierd markdownlint-cli2 ansible-lint
 ```
+
+`ansible-lint` 会连 `ansible-core` 一起装进 mason 自己的虚拟环境，但 mason 只把
+`ansible-lint` 这一个命令链接出来。**`ansible` 命令还得单独装**（`pipx install ansible`
+或系统包管理器），语言服务器要靠它查模块文档。
 
 ```bash
 # macOS
@@ -85,6 +91,7 @@ sudo apt install ripgrep fzf build-essential python3-venv python3-pip
 │   │   ├── options.lua         # 选项：行号、缩进、搜索、剪贴板、持久化、折叠、消息界面…
 │   │   ├── keymaps.lua         # 全局按键映射
 │   │   ├── autocmds.lua        # 自动命令：复制高亮、恢复光标、q 关辅助窗口
+│   │   ├── filetype.lua        # 文件类型识别补充：Ansible 的 YAML、Jinja 模板
 │   │   └── lazy.lua            # 引导并启动插件管理器 lazy.nvim
 │   └── plugins/                # 插件声明，每个文件返回一张 spec 表，自动全部导入
 │       ├── colorscheme.lua     # 配色：tokyonight（storm 风格）
@@ -120,6 +127,8 @@ sudo apt install ripgrep fzf build-essential python3-venv python3-pip
 │       ├── persisted.lua       # 会话恢复：persisted
 │       ├── render-markdown.lua # Markdown 就地渲染：render-markdown
 │       └── whichkey.lua        # 按键提示：which-key
+├── ftplugin/                   # 按文件类型生效的局部设置（Neovim 的固定约定目录）
+│   └── ansible.lua             # Ansible：gf 跳 files/templates、ansible-doc 后备
 ├── docs/
 │   ├── notes.md                # 收件箱：随手记，定期清空归档到下面两个文件
 │   ├── cheatsheet.md           # 操作技巧速查（怎么用 Vim）
@@ -141,7 +150,7 @@ sudo apt install ripgrep fzf build-essential python3-venv python3-pip
 init.lua
   ├── vim.loader.enable()   # Lua 字节码缓存，必须在所有 require 之前
   ├── vim.g.mapleader = " " # leader 必须在所有映射之前，全仓库只设这一次
-  ├── require config.options → config.keymaps → config.autocmds
+  ├── require config.options → config.keymaps → config.autocmds → config.filetype
   └── require config.lazy   # 必须最后：它会接管启动流程并开始加载插件
 ```
 
@@ -342,6 +351,44 @@ Git（gitsigns，**只在 git 仓库里的文件上生效**）。
 > `<M-e>` 是 Alt/Option 组合。macOS 的终端默认把 Option 当成「打特殊字符」的键，
 > 发不出 Alt 组合。Ghostty 在 `~/.config/ghostty/config` 里加一行
 > `macos-option-as-alt = true` 即可。
+
+## Ansible 与 Jinja 模板
+
+Neovim 内置的文件类型识别里**一条 Ansible 规则都没有**，
+所有 `.yml` 一律是普通 YAML。而 ansible-language-server 只认
+`yaml.ansible` 这个类型。所以这块能力的地基是
+[lua/config/filetype.lua](lua/config/filetype.lua)：
+按 Ansible 自己的目录约定把路径翻译成文件类型。
+
+| 路径 | 文件类型 | 谁来接管 |
+| --- | --- | --- |
+| `tasks/` `handlers/` `defaults/` `vars/` | `yaml.ansible` | ansiblels |
+| `playbooks/` `playbook*.yml` `site.yml` | `yaml.ansible` | ansiblels |
+| `group_vars/` `host_vars/` `inventor{y,ies}/` | `yaml.ansible` | ansiblels |
+| `molecule/` `meta/main.yml` | `yaml.ansible` | ansiblels |
+| `galaxy.yml` `meta/runtime.yml` 等其余 YAML | `yaml` | yamlls |
+| `*.j2` `*.jinja2` | `底层.jinja` | 无 |
+
+`tasks/` 这些写成了不带 `roles/` 前缀的通用形式，
+所以仓库里的角色和**独立的角色仓库**都能认出来，
+collection 的 `tests/integration/targets/*/tasks/` 也一并覆盖。
+代价是非 Ansible 项目里恰好有个 `tasks/` 目录时会误判，
+遇到了在那个缓冲区里 `:setfiletype yaml` 改回来即可。
+
+认出来之后就是现成的能力，没有额外按键：模块名和参数补全走
+`<C-space>`，`K` 显示模块文档，诊断由服务器调用 `ansible-lint` 产出
+（`]d` `[d` 逐条过，`<leader>xx` 看总量）。
+另外在 `tasks/` 里对着 `src: nginx.conf.j2` 按 `gf`
+能直接跳进同一个角色的 `templates/`，`files/` 同理。
+
+Jinja 模板走的是「复合文件类型叠加」：`nginx.conf.j2` 被识别成
+`nginx.jinja`，nginx 的语法和 Jinja 的 `{{ }}` `{% %}` 同时有色 ——
+Neovim 自带的 `syntax/jinja.vim` 本来就是设计成叠在别的语法之上的。
+这类文件刻意不走 treesitter（底层解析器会被 `{% %}` 噎住）。
+
+`<leader>cf` 对 Ansible 的 YAML 和 Jinja 模板都**刻意不做事**：
+前者的排版规矩归 `ansible-lint` 管，两套规则打架只会让警告变多；
+后者根本不是合法的底层语言，prettier 连解析都过不去。
 
 ## 插件常用命令
 

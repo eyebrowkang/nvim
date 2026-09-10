@@ -91,9 +91,21 @@ return {
       vim.api.nvim_create_autocmd("FileType", {
         desc = "为装了解析器的文件类型开启 treesitter 高亮",
         callback = function(args)
+          local ft = vim.bo[args.buf].filetype
+
+          -- Jinja 模板要跳过。lua/config/filetype.lua 把 nginx.conf.j2 这类文件
+          -- 识别成 `nginx.jinja` 这样的复合类型，而下面的 get_lang 只看点号前面
+          -- 那一半 —— 结果是拿底层语言的解析器去解析一个满是 {{ }} / {% %} 的
+          -- 模板，整篇都是错误节点，还会顶掉自带的 syntax/jinja.vim 那层高亮。
+          -- 这类文件用正则语法就够了，treesitter 这边直接不接手。
+          if ft:find("%.jinja$") then
+            return
+          end
+
           -- 文件类型名和解析器名不总是一样（比如 ft=sh 对应解析器 bash），
           -- get_lang 负责这层翻译；没有对应关系时它原样返回文件类型名。
-          local lang = vim.treesitter.language.get_lang(vim.bo[args.buf].filetype)
+          -- 带点号的复合类型它会自己拆开取前半段，所以 yaml.ansible 得到的是 yaml。
+          local lang = vim.treesitter.language.get_lang(ft)
 
           -- language.add 会去 runtimepath 里找这个解析器：
           -- 找到并加载成功返回 true，找不到返回 nil（不会报错，可以直接当条件用）。

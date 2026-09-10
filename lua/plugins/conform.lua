@@ -86,6 +86,31 @@ return {
         scss = { "prettierd", "prettier", stop_after_first = true },
         markdown = { "prettierd", "prettier", stop_after_first = true },
 
+        -- Ansible 的 YAML 不交给 prettier。
+        -- 排版归 ansible-lint 管 —— 它内部带一套 yamllint 规则（缩进、行长、
+        -- 引号、注释间距都在管），而且它的判断才是 CI 里会拦你的那一个。
+        -- prettier 按自己的一套重排，两边规矩不一样，很容易出现
+        -- 「格式化完反而多了几条警告」。
+        --
+        -- ⚠ 写法上有个讲究：这里的键是完整的复合类型 yaml.ansible。
+        --   conform 查表时会先拿完整类型试一次，再拆点号从后往前试
+        --   （yaml.ansible → ansible → yaml → _），第一个命中的就定了。
+        --   所以这一条能精确拦在 yaml 那条前面，普通 YAML 不受影响。
+        --   但值不能写成空表 {} —— conform 明确把空表当作「没配」而跳过，
+        --   会继续往下落到 yaml 那条。写成返回空表的函数才算数。
+        ["yaml.ansible"] = function()
+          return {}
+        end,
+
+        -- Jinja 模板同理，而且理由更硬：模板里的 {% for %} / {{ 变量 }}
+        -- 对底层语言来说就是语法错误，prettier 连解析都过不去。
+        -- lua/config/filetype.lua 把这类文件识别成 `底层.jinja`（yaml.jinja、
+        -- nginx.jinja……），而 conform 拆点号时是**从后往前**找的，
+        -- 所以这一条 jinja 总能抢在 yaml / html 那些前面命中。
+        jinja = function()
+          return {}
+        end,
+
         -- 没有 sh / bash 这一项：bash-language-server 自己就会调用 shfmt 格式化，
         -- 上面 default_format_opts 的 fallback 会把 shell 脚本交给它。
         -- 在这里再配一个 shfmt 就成了两套规则来回打架。

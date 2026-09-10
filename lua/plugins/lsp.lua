@@ -129,6 +129,12 @@ return {
         "cssls",
         "ts_ls", -- JavaScript / TypeScript（名字里的 ts 指 TypeScript）
 
+        -- Ansible：ansible-language-server。
+        -- 它只认 yaml.ansible 这个文件类型，由 lua/config/filetype.lua 产生 ——
+        -- Neovim 内置的识别规则里一条 Ansible 都没有，没那个文件它永远挂不上。
+        -- 补全模块名和参数、悬浮显示模块文档（K），检查由它调用 ansible-lint 完成。
+        "ansiblels",
+
         -- Python：两个服务器分工，见下面的说明
         "basedpyright",
         "ruff",
@@ -194,6 +200,26 @@ return {
           client.server_capabilities.hoverProvider = false
         end,
       })
+
+      -- Ansible。nvim-lspconfig 给的默认 root_markers 只有两项：
+      -- ansible.cfg 和 .ansible-lint。问题是这两个文件在很多仓库里都不存在 ——
+      -- 独立的 role 仓库、collection 仓库经常一个都没有，于是项目根目录判不出来，
+      -- 服务器只能按单个文件工作，跨文件的角色和变量就找不到了。
+      -- 这里把常见的仓库标志补上，从具体到宽泛排：galaxy.yml 是 collection
+      -- 和 role 的元数据文件，.git 兜底。
+      -- root_markers 匹配的是**文件名**，不能写 meta/main.yml 这种带斜杠的路径。
+      vim.lsp.config("ansiblels", {
+        root_markers = { "ansible.cfg", ".ansible-lint", "galaxy.yml", ".git" },
+      })
+      -- 没有动它的 settings：nvim-lspconfig 那份默认值已经把
+      -- validation.lint.enabled 打开了，检查由服务器自己调 ansible-lint 完成。
+      -- 所以 lua/plugins/lint.lua 里刻意没有再配一个 ansible_lint，
+      -- 否则同一条规则会被报两遍（和那边 shellcheck、ruff 的处理原则一致）。
+      --
+      -- ⚠ 它依赖两个外部命令，都不是 mason 自动带的：
+      --     ansible        本体，pip install ansible 或系统包管理器
+      --     ansible-lint   :MasonInstall ansible-lint（也可以 pip 装）
+      --   缺 ansible 时服务器起得来但查不到模块文档；缺 ansible-lint 时没有诊断。
 
       -- 没有为 lua_ls 写覆盖配置：它需要的 runtime.version、workspace.library
       -- 这些全部由 lazydev.nvim 在运行时动态注入（见 lazydev.lua），

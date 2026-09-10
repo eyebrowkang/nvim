@@ -488,6 +488,77 @@ end
 
 ---
 
+## 文件类型是怎么定下来的
+
+文件类型是几乎所有「按语言区分」的行为的挂钩点：语法高亮、缩进、
+`ftplugin/` 里的局部设置、哪个语言服务器接管、哪个格式化器跑。
+
+### 四轮匹配，顺序是死的
+
+`vim.filetype.match` 按这个顺序找，**先命中的赢**：
+
+1. `filename` —— 完整文件名精确匹配（`Makefile`）
+2. `pattern` 里优先级 `>= 0` 的
+3. `extension` —— 扩展名
+4. `pattern` 里优先级 `< 0` 的
+5. 都没中才去读文件内容猜
+
+关键是第 2 轮排在扩展名前面。`vim.filetype.add` 的 `pattern` 默认优先级
+就是 0，所以一条自己写的路径规则能盖掉内置的「`.yml` → `yaml`」。
+想反过来让内置的赢，就显式写负优先级：
+
+```lua
+vim.filetype.add({
+  pattern = { [".*/foo/.*%.conf"] = { "dosini", { priority = -1 } } },
+})
+```
+
+### 坑：自己写的 pattern 不要加 `^` 和 `$`
+
+`vim.filetype.add` 会把你给的模式包成 `^…$` 再存起来
+（源码原话：user patterns are assumed to be implicitly anchored）。
+自己再补一个 `$`，存进去就成了 `…$$`，
+含义变成「匹配一个字面的美元符号之后才到结尾」，规则永远不命中，
+而且不报错 —— 只是安静地不生效。
+
+隐式两头锚定顺带解决了一类误伤：`.*/group_vars/.*%.ya?ml`
+不会命中 `group_vars/all.yml.j2`，因为那个路径的结尾不是 `yml`。
+
+另外模式是 **Lua 模式**不是 shell 通配符（`.` 写成 `%.`），
+模式里出现 `/` 时匹配完整路径，否则只拿文件名比。
+
+### `vim.filetype.match` 匹配不上时返回的是「零个值」
+
+不是 `nil`。所以不能直接塞进 `tostring()` 或字符串拼接，
+会报 `value expected`。先接到局部变量里：
+
+```lua
+local ft = vim.filetype.match({ filename = path })  -- 可能是零个值
+if not ft then ... end
+```
+
+### 带点号的复合文件类型
+
+`yaml.ansible`、`nginx.jinja` 这种是一个类型名，不是两个。
+各处对它的拆法不一样，配置时要按实际行为算：
+
+- **ftplugin / syntax**：逐段加载。`yaml.ansible` 会依次执行
+  `ftplugin/yaml.*` 和 `ftplugin/ansible.*`，语法文件同理 ——
+  这正是 `syntax/jinja.vim` 能叠在别的语法上的原理。
+- **`vim.treesitter.language.get_lang()`**：整体查不到时，
+  **只取第一段**。`yaml.ansible` 得到 `yaml`。
+- **conform**：先拿完整类型查一次，再拆开**从后往前**查
+  （`yaml.jinja` → `jinja` → `yaml` → `_`），第一个命中的就定了。
+  ⚠ 值写成空表 `{}` 会被当成「没配」而跳过，
+  想拦住某个复合类型不给它任何格式化器，得写成返回空表的**函数**。
+- **nvim-lint**：拆开逐段查，每段命中的 linter 都会跑。
+
+写自己的 `FileType` 自动命令时也要记得这件事：
+`vim.bo.filetype` 拿到的是完整的 `yaml.ansible`，
+拿它去和 `"yaml"` 比会不相等。
+
+---
+
 ## LSP 在 0.12 上是内置能力，插件只是周边
 
 从 0.11 起，`vim.lsp.config()` 和 `vim.lsp.enable()` 进了核心。
