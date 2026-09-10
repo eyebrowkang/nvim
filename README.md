@@ -122,11 +122,17 @@ sudo apt install ripgrep fzf build-essential python3-venv python3-pip
 ├── docs/
 │   ├── notes.md                # 收件箱：随手记，定期清空归档到下面两个文件
 │   ├── cheatsheet.md           # 操作技巧速查（怎么用 Vim）
-│   └── lua-api.md              # 配置机制与 Lua API（怎么写配置）
+│   ├── lua-api.md              # 配置机制与 Lua API（怎么写配置）
+│   └── project-config.md       # 专题：给单个项目做专属配置
 └── logs/                       # 临时调试日志，不进 git
 ```
 
 插件本体装在 `~/.local/share/nvim/lazy/`，是下载来的产物，不进这个仓库。
+
+`docs/` 下除了两份速查，成体系的话题另开一篇：
+[project-config.md](docs/project-config.md) 讲怎么给单个项目做专属配置 ——
+不同项目不同缩进、项目专属的语言服务器设置、项目专属的映射，
+相当于 VSCode 的 workspace settings。
 
 ## 加载顺序
 
@@ -374,6 +380,7 @@ Git 与终端：
   就不要再映射一遍。已有的内置能力清单见 [docs/cheatsheet.md](docs/cheatsheet.md)。
 - **`docs/notes.md` 是收件箱**，随手往里丢。定期分类归档：
   操作技巧 → `cheatsheet.md`，配置写法/API/机制 → `lua-api.md`，归档后清空 notes。
+  攒够一个成体系的话题（塞进上面两份会喧宾夺主的），在 `docs/` 下单开一个文件。
 - **Lua 代码风格交给 stylua**，规则写在根目录的 `stylua.toml` 里（2 空格、双引号、120 列）。
   排版上不要和它较劲：手工对齐的行尾注释会被它拆掉，多个短项挤在一行也会被拆成每行一个。
   想让注释管住一组项，把注释写在这组的**上面**，别写在行尾——
