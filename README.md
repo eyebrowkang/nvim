@@ -33,7 +33,7 @@
 | `node` `npm` | mason 装的大部分语言服务器 | 那几个服务器装不上，其余照常 |
 | `python3` + venv | mason 装 basedpyright 时要建虚拟环境 | Python 的类型检查装不上 |
 | `lazygit` | `<leader>gg` 的 git 操作界面 | 按 `<leader>gg` 弹一条提示，别的不受影响 |
-| `ansible` | ansible-language-server 查模块文档 | Ansible 文件按 `K` 查不到模块说明 |
+| `ansible` | ansible-language-server 靠它列出模块清单 | Ansible 文件补全里没有模块名、`K` 也查不到说明 |
 | `ansible-lint` | 同上，它是服务器的检查后端 | Ansible 文件没有诊断，其余功能照常 |
 
 「按语法」的那些功能都建立在解析器之上：某个语言没装解析器时，
@@ -51,7 +51,8 @@ mason 会把 [lua/plugins/lsp.lua](lua/plugins/lsp.lua) 里 `ensure_installed` �
 
 `ansible-lint` 会连 `ansible-core` 一起装进 mason 自己的虚拟环境，但 mason 只把
 `ansible-lint` 这一个命令链接出来。**`ansible` 命令还得单独装**（`pipx install ansible`
-或系统包管理器），语言服务器要靠它查模块文档。
+或系统包管理器），语言服务器要靠它列出模块清单 —— 少了它补全里一个模块名都没有，
+详见 [Ansible 与 Jinja 模板](#ansible-与-jinja-模板)。
 
 ```bash
 # macOS
@@ -375,11 +376,50 @@ collection 的 `tests/integration/targets/*/tasks/` 也一并覆盖。
 代价是非 Ansible 项目里恰好有个 `tasks/` 目录时会误判，
 遇到了在那个缓冲区里 `:setfiletype yaml` 改回来即可。
 
-认出来之后就是现成的能力，没有额外按键：模块名和参数补全走
-`<C-space>`，`K` 显示模块文档，诊断由服务器调用 `ansible-lint` 产出
+认出来之后就是现成的能力，没有额外按键：模块名和参数边打边补，
+`K` 显示模块文档，诊断由服务器调用 `ansible-lint` 产出
 （`]d` `[d` 逐条过，`<leader>xx` 看总量）。
 另外在 `tasks/` 里对着 `src: nginx.conf.j2` 按 `gf`
 能直接跳进同一个角色的 `templates/`，`files/` 同理。
+
+### 补全里只有 `become` `when` 这些，没有模块名
+
+模块清单不在语言服务器内部，它是现场调 `ansible-doc` 列出来的。
+所以 **`ansible` 命令不在 `PATH` 上时，补全只剩 play/task 的关键字**：
+实测同一个位置，没有 `ansible` 时是 59 个候选，全是 `args` `async`
+`become` `become_method` 这类；装上之后是 3882 个，其中 3823 个是
+`ansible.builtin.*` 这样的全限定模块名。
+
+在出问题的那个缓冲区里自查这三行，哪行是空的就是哪里断了：
+
+```vim
+:lua =vim.bo.filetype                            " 应为 yaml.ansible
+:lua =vim.lsp.get_clients({ bufnr = 0 })[1].name " 应为 ansiblels
+:lua =vim.fn.exepath("ansible")                  " 不能是空字符串
+```
+
+第三行空就装一个：`pipx install ansible`、`brew install ansible`
+或系统包管理器。上面说过，mason 装的 `ansible-lint` 不会把 `ansible`
+链接到 `PATH` 上，所以 `:Mason` 里看到 ansible-lint 是绿的**不代表**这一项也有了。
+
+### 不要去打 `ansible.builtin.` 这个前缀
+
+打到点号的那一刻候选窗会关掉，接着打字母才重新弹出来。
+原因是 ansiblels 没有向客户端声明任何「触发字符」
+（它的 `completionProvider` 里只有 `resolveProvider`），
+而 blink.cmp 只在字母、数字、`-`、`_` 上自动弹窗，点号不算
+—— 往 `iskeyword` 里加 `.` 也没用，blink 用的是自己的一套词定义。
+
+不用跟它较劲，**直接打短名就行**。服务器给每个候选的过滤文本是
+`copy ansible.builtin.copy builtin ansible`，短名排在最前面，
+所以打三个字母 `cop` 就能选中 `ansible.builtin.copy`。
+`<C-y>` 确认后写进缓冲区的是全限定名，还带上了冒号和下一行的缩进：
+
+```yaml
+- name: 拷贝配置
+  ansible.builtin.copy:
+    ▏                      ← 光标停在这，接着写参数
+```
 
 Jinja 模板走的是「复合文件类型叠加」：`nginx.conf.j2` 被识别成
 `nginx.jinja`，nginx 的语法和 Jinja 的 `{{ }}` `{% %}` 同时有色 ——
