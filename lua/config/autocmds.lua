@@ -87,3 +87,65 @@ autocmd("FileType", {
     })
   end,
 })
+
+-- ====================================================================
+-- 4. 光标停在一个符号上时，高亮它在本文件里的其他出现位置
+-- ====================================================================
+-- 把光标停在一个变量名上，本文件里所有用到它的地方一起浅浅地亮起来，
+-- 一眼看出这个变量在哪几处被读、在哪几处被写。移开光标就消失。
+--
+-- 这是语言服务器的能力（textDocument/documentHighlight），不是文本匹配：
+-- 同名但其实是另一个作用域里的变量不会被算进来。
+--
+-- 三样东西 Neovim 都自带了，但**默认不会自己接起来**：
+--   vim.lsp.buf.document_highlight()   发请求，把结果画成高亮
+--   vim.lsp.util.buf_clear_references() 清掉画上去的高亮
+--   LspReferenceRead / LspReferenceWrite / LspReferenceText  三个高亮组
+-- 所以只差这段把它们挂到光标事件上的胶水，不需要装插件。
+--
+-- 停多久才亮由 updatetime 决定（options.lua 第 7 节，250ms）。
+local lsp_hl = augroup("LspDocumentHighlight", { clear = true })
+-- 光标事件的自动命令单独放一组，退出时好按缓冲区精确清理 ——
+-- 如果和下面的 LspAttach/LspDetach 混在一组，清理时会把正在执行的自己也删掉。
+local lsp_hl_cursor = augroup("LspDocumentHighlightCursor", { clear = true })
+
+autocmd("LspAttach", {
+  group = lsp_hl,
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    -- 不是每个服务器都提供这个能力（比如 ruff 就不提供），不支持就直接不挂。
+    if not client or not client:supports_method("textDocument/documentHighlight") then
+      return
+    end
+
+    -- 一个缓冲区可能挂两个服务器（Python 就是 basedpyright + ruff），
+    -- 先清掉旧的，避免同一个事件注册两遍、请求发两份。
+    vim.api.nvim_clear_autocmds({ group = lsp_hl_cursor, buffer = args.buf })
+
+    -- CursorHold 是「光标停住不动 updatetime 毫秒」，插入模式下对应 CursorHoldI。
+    autocmd({ "CursorHold", "CursorHoldI" }, {
+      group = lsp_hl_cursor,
+      buffer = args.buf,
+      callback = vim.lsp.buf.document_highlight,
+    })
+
+    -- 光标一动就把高亮清掉，否则它会一直留在原地，越积越多。
+    autocmd({ "CursorMoved", "CursorMovedI" }, {
+      group = lsp_hl_cursor,
+      buffer = args.buf,
+      callback = vim.lsp.buf.clear_references,
+    })
+  end,
+})
+
+-- 服务器断开（:LspStop、服务器崩了、缓冲区关掉）时收摊，
+-- 否则最后一次画上去的高亮会永远留在那儿。
+autocmd("LspDetach", {
+  group = lsp_hl,
+  callback = function(args)
+    -- 用带缓冲区号的这个，而不是 vim.lsp.buf.clear_references() ——
+    -- 后者只作用于当前缓冲区，而断开的不一定是你正看着的那个。
+    vim.lsp.util.buf_clear_references(args.buf)
+    vim.api.nvim_clear_autocmds({ group = lsp_hl_cursor, buffer = args.buf })
+  end,
+})

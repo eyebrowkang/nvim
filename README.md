@@ -96,6 +96,7 @@ sudo apt install ripgrep fzf build-essential python3-venv python3-pip
 │       ├── colorizer.lua       # 颜色代码高亮：nvim-colorizer
 │       ├── alpha.lua           # 起始页：alpha-nvim
 │       ├── treesitter.lua      # 语法解析：nvim-treesitter（高亮的底座）
+│       ├── ts-context.lua      # 上下文粘顶：nvim-treesitter-context
 │       ├── lsp.lua             # 语言服务器：mason + mason-lspconfig + nvim-lspconfig
 │       ├── lazydev.lua         # 让 lua_ls 认识 vim.* 这些 Neovim API：lazydev
 │       ├── cmp.lua             # 自动补全 + Snippet：blink.cmp + friendly-snippets
@@ -157,7 +158,7 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `<leader>f…` | **f**ind，查找：文件、内容、buffer、帮助、按键、待办 |
 | `<leader>s…` | **s**earch & replace，全项目搜索替换 |
 | `<leader>b…` | **b**uffer 标签栏操作 |
-| `<leader>c…` | **c**ode，代码相关；目前只有 `<leader>cf` 格式化 |
+| `<leader>c…` | **c**ode，代码相关：格式化、内嵌提示开关、上下文粘顶开关 |
 | `<leader>g…` | **g**it：改动的暂存 / 回滚 / 预览 / blame，以及 lazygit |
 | `<leader>t…` | **t**erminal，终端：浮窗 / 底部 / 侧边 |
 | `<leader>x…` | 诊断列表面板：诊断 / 大纲 / 引用 / quickfix（trouble） |
@@ -231,11 +232,28 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `<C-s>`（插入模式） | 显示当前函数的参数签名 |
 | `gq` + 动作 | 按语言服务器的规则格式化一段范围 |
 
-唯一自己映射的一个：
+自己映射的三个：
 
 | 按键 | 用途 |
 | --- | --- |
 | `<leader>cf` | 格式化整个文件；可视模式下只格式化选区（conform.nvim） |
+| `<leader>ch` | 开关内嵌提示（Neovim 内置，见下） |
+| `<leader>ct` | 开关上下文粘顶（nvim-treesitter-context） |
+
+两样不用按键、自动生效的显示：
+
+- **内嵌提示（inlay hints）**：语言服务器把推断出来的类型、参数名以浅色小字
+  画进代码行里（`local x: number = f()`、`setTimeout(callback: fn, delay: 1000)`）。
+  纯虚拟文本，源文件没有变化，复制粘贴带不走。默认开着，在
+  `lua/config/options.lua` 第 9 节；碍事时按 `<leader>ch` 临时关掉。
+- **同名符号高亮**：光标在一个变量上停 250ms，它在本文件里的其他出现位置
+  一起亮起来，读和写用不同的高亮组区分。走的是语言服务器的
+  `textDocument/documentHighlight`，同名但不同作用域的变量不会被算进来。
+  Neovim 自带这个能力但默认不接线，胶水在 `lua/config/autocmds.lua` 第 4 节，
+  没有装插件。
+
+上下文粘顶是第三样：函数写长了往下滚，外层的函数签名、`if`、`for` 会钉在
+窗口最上面，最多 3 行。同样靠 treesitter 的语法树，不是按缩进猜的。
 
 诊断（就是代码里的错误和警告，显示样式在 `lua/config/options.lua` 第 9 节）：
 

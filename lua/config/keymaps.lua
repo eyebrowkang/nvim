@@ -79,3 +79,17 @@ map({ "n", "x" }, "<leader>P", '"+P', opts("粘贴系统剪贴板到光标前"))
 -- 注意：这组映射能不能用，取决于系统上装没装剪贴板工具
 -- （macOS 自带 pbcopy；Linux 需要 wl-clipboard 或 xsel/xclip）。
 -- 缺工具时按下去会报 clipboard provider 相关的错，用 :checkhealth vim.provider 排查。
+
+-- ====================================================================
+-- 4. 内嵌提示开关
+-- ====================================================================
+-- 内嵌提示（inlay hints）默认开着，在 options.lua 第 9 节打开。
+-- 这里给一个临时开关：读一段陌生代码时它很有用，但要数对齐、要截图、
+-- 或者提示比代码本身还长的时候，按一下先关掉。
+--
+-- 不传第二个参数就是全局开关，和 options.lua 里那次调用作用范围一致。
+-- 只想关当前这个文件的话把参数写全：
+--   vim.lsp.inlay_hint.enable(false, { bufnr = 0 })
+map("n", "<leader>ch", function()
+  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+end, opts("开关内嵌提示"))

@@ -543,6 +543,53 @@ end
 网上大量教程还在写 `on_attach = function(_, bufnr) vim.keymap.set(...) end` 绑十几个键，
 在 0.12 上那是把内置的又抄了一遍。本仓库一个 LSP 按键都没映射。
 
+### 但有些内置能力是「有零件、没接线」的
+
+按键和上面三个选项会自动设好，另外两样不会 —— API 和高亮组 Neovim 都自带，
+但没有任何东西把它们挂到事件上。这类东西容易被误判成「缺插件」：
+
+- **内嵌提示**：零件是 `vim.lsp.inlay_hint.enable()`，默认关着
+  （`vim.lsp.inlay_hint.is_enabled()` 返回 `false`），一行就能开。
+- **同名符号高亮**：零件是 `vim.lsp.buf.document_highlight()`、
+  `vim.lsp.util.buf_clear_references()` 和 `LspReference*` 三个高亮组，
+  全都在，但没有任何自动命令去调它们。
+
+高亮这套要自己写胶水，形状是这样
+（完整版见 `lua/config/autocmds.lua` 第 4 节）：
+
+```lua
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    -- 不是每个服务器都提供，不判断就会白发请求
+    local method = "textDocument/documentHighlight"
+    if not client or not client:supports_method(method) then
+      return
+    end
+    vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+      buffer = args.buf,
+      callback = vim.lsp.buf.document_highlight,
+    })
+    vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+      buffer = args.buf,
+      callback = vim.lsp.buf.clear_references,
+    })
+  end,
+})
+```
+
+两个细节：
+
+- `client:supports_method(...)` 要用**冒号**。点调用
+  `client.supports_method(...)` 现在仍然能跑（`vim/lsp/client.lua` 里有个
+  包装器发现第一个参数不是 `self` 就替你补上），但会记一条废弃警告，
+  计划 0.13 移除。同样的包装器还罩着 `request` / `notify` / `stop` 等几个，
+  所以从教程里抄来的点调用不会立刻出错，只会在
+  `:checkhealth vim.deprecated` 里堆着。
+- 收尾要用 `vim.lsp.util.buf_clear_references(bufnr)` 而不是
+  `vim.lsp.buf.clear_references()` —— 后者只作用于**当前**缓冲区，
+  而在 `LspDetach` 里断开的不一定是你正看着的那个。
+
 ### `vim.lsp.enable()` 对已经打开的缓冲区也生效
 
 它内部做两件事（`$VIMRUNTIME/lua/vim/lsp.lua`）：注册一个 `FileType` 自动命令，
