@@ -32,6 +32,7 @@
 | `git` `curl` | blink.cmp（下载补全用的预编译二进制） | 补全菜单出不来 |
 | `node` `npm` | mason 装的大部分语言服务器 | 那几个服务器装不上，其余照常 |
 | `python3` + venv | mason 装 basedpyright 时要建虚拟环境 | Python 的类型检查装不上 |
+| `lazygit` | `<leader>gg` 的 git 操作界面 | 按 `<leader>gg` 弹一条提示，别的不受影响 |
 
 「按语法」的那些功能都建立在解析器之上：某个语言没装解析器时，
 它的文件里 `am` / `ic` / `i=` / `]m` / `S` 会不生效，其余按键照常。
@@ -48,11 +49,13 @@ mason 会把 [lua/plugins/lsp.lua](lua/plugins/lsp.lua) 里 `ensure_installed` �
 
 ```bash
 # macOS
-brew install ripgrep fzf tree-sitter node
+brew install ripgrep fzf tree-sitter node lazygit
 xcode-select --install                      # C 编译器
 
 # Debian / Ubuntu
 sudo apt install ripgrep fzf build-essential python3-venv python3-pip
+# lazygit 不在 apt 源里，从 github.com/jesseduffield/lazygit 的 release
+# 下对应架构的 tar.gz，解出来的 lazygit 放进 PATH 即可。
 # Node.js 用 nvm 装（apt 源里的版本通常过旧），装完 nvm 再 nvm install --lts：
 #   github.com/nvm-sh/nvm 的 README 里有安装命令
 # tree-sitter CLI 要求 >= 0.26.1，apt 源里的版本通常过旧，
@@ -109,6 +112,8 @@ sudo apt install ripgrep fzf build-essential python3-venv python3-pip
 │       ├── autotag.lua        # HTML 标签自动闭合与联动改名：nvim-ts-autotag
 │       ├── splitjoin.lua      # 参数列表拆行 / 合行：mini.splitjoin
 │       ├── align.lua          # 按分隔符对齐：mini.align
+│       ├── gitsigns.lua       # Git 改动标记与 hunk 操作：gitsigns
+│       ├── toggleterm.lua     # 终端 + lazygit 浮窗：toggleterm
 │       └── whichkey.lua       # 按键提示：which-key
 ├── docs/
 │   ├── notes.md               # 收件箱：随手记，定期清空归档到下面两个文件
@@ -143,6 +148,8 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `<leader>s…` | **s**earch & replace，全项目搜索替换 |
 | `<leader>b…` | **b**uffer 标签栏操作 |
 | `<leader>c…` | **c**ode，代码相关；目前只有 `<leader>cf` 格式化 |
+| `<leader>g…` | **g**it：改动的暂存 / 回滚 / 预览 / blame，以及 lazygit |
+| `<leader>t…` | **t**erminal，终端：浮窗 / 底部 / 侧边 |
 | `<leader>a` `<leader>A` | **a**rgument，当前参数和后一个 / 前一个对调位置 |
 | `<leader>y` `<leader>p` | 系统剪贴板复制 / 粘贴（普通寄存器保持独立） |
 | `<leader>?` | 列出当前缓冲区里所有可用按键 |
@@ -238,6 +245,45 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 
 函数签名不归它管，用上面内置的 `<C-s>`。
 
+Git（gitsigns，**只在 git 仓库里的文件上生效**）。
+「hunk / 块」是连续的一段改动，也是 git 能单独暂存的最小单位：
+
+| 按键 | 用途 |
+| --- | --- |
+| `]h` `[h` | 下一处 / 上一处改动 |
+| `]H` `[H` | 本文件最后一处 / 第一处改动 |
+| `<leader>gs` | 暂存这一块；停在已暂存的块上再按一次就撤销暂存。支持 `.` 重复 |
+| `<leader>gr` | 回滚这一块（改的是缓冲区，按错了 `u` 就回来）。支持 `.` 重复 |
+| `<leader>gs` `<leader>gr`（可视模式） | 只处理选中的那几行，一块里也能只挑一部分 |
+| `<leader>gS` `<leader>gR` | 暂存 / 回滚整个文件 |
+| `<leader>gp` | 浮窗预览这一块的完整 diff（删掉的行只能在这看到） |
+| `<leader>gb` | 光标这一行是谁、什么时候、哪个提交改的 |
+| `<leader>gB` | 侧边开窗，整个文件逐行 blame |
+| `<leader>gd` | 和上次提交并排对比（进内置 diff 模式，`]c` `do` `dp` 都能用） |
+| `<leader>gq` | 全仓库未提交的改动进 quickfix，然后 `]q` `[q` 逐个过 |
+| `<leader>gt` | 开关「每行行尾显示 blame」 |
+| `ih` | 文本对象：这一块改动。`vih` 选中，`dih` 删掉 |
+
+先按 `<leader>gp` 打开预览浮窗，再按 `]h`，浮窗会跟着跳到下一块 ——
+相当于一路翻着看这次都改了什么。
+
+终端（toggleterm）。同一个键按第二次收回去，**进程继续在后台跑，输出不会丢**：
+
+| 按键 | 用途 |
+| --- | --- |
+| `<leader>gg` | lazygit 浮窗：提交、切分支、rebase、看历史，完整的 git 操作都在这 |
+| `<leader>tf` | 浮窗终端（1 号） |
+| `<leader>th` | 底部终端（2 号，15 行高） |
+| `<leader>tv` | 侧边终端（3 号，占 40% 宽） |
+| `<leader>ts` | 在多个终端之间选一个跳过去 |
+| `<C-\><C-n>` | 从终端里退回普通模式，之后可以滚动、复制、切窗口（Neovim 内置） |
+| `[[` `]]` | 终端里在 shell 提示符之间跳（Neovim 内置，需要 shell 发 OSC 133） |
+
+三个键是三个各自独立的 shell，可以一个跑测试、一个跑服务器、一个随手敲。
+还想要更多直接敲 `:4ToggleTerm`，编号任意。
+
+终端里没有把 `<Esc>` 映射成退出 —— lazygit、less、htop 这些程序自己要用 Esc。
+
 内置映射的完整清单：`:help default-mappings`。
 想查某个键现在归谁管，用 `<leader>fk` 或 `:verbose map <键>`。
 
@@ -265,6 +311,16 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 :lsp restart              " 改完配置或服务器卡住时重启它（还有 enable/disable/stop）
 :ConformInfo              " 当前文件会用哪个格式化器、它装了没有
 :LazyDev                  " 查 lua_ls 当前加载了哪些库（补全不出 vim.* 时看这个）
+```
+
+Git 与终端：
+
+```vim
+:Gitsigns                 " 所有 gitsigns 操作都能当子命令用，带补全
+:Gitsigns change_base ~1  " 换个对比基准：不跟上次提交比，跟再往前一个比
+:Gitsigns show ~1         " 打开某个版本的这个文件（只读）
+:4ToggleTerm              " 开第 4 个终端；direction=float/horizontal/vertical 指定形态
+:TermExec cmd="make test" " 把命令送进终端里执行
 ```
 
 ## 约定
