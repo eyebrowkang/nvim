@@ -77,50 +77,53 @@ sudo apt install ripgrep fzf build-essential python3-venv python3-pip
 
 ```
 .
-├── init.lua                   # 入口：开缓存 → 定 leader → 按顺序 require
-├── lazy-lock.json             # 插件版本锁文件，由 lazy.nvim 生成，必须进 git
-├── stylua.toml                # Lua 格式化规则（<leader>cf 调 stylua 时读它）
+├── init.lua                    # 入口：开缓存 → 定 leader → 按顺序 require
+├── lazy-lock.json              # 插件版本锁文件，由 lazy.nvim 生成，必须进 git
+├── stylua.toml                 # Lua 格式化规则（<leader>cf 调 stylua 时读它）
 ├── lua/
-│   ├── config/                # 核心原生配置（不依赖任何插件）
-│   │   ├── options.lua        # 选项：行号、缩进、搜索、剪贴板、持久化、折叠、消息界面…
-│   │   ├── keymaps.lua        # 全局按键映射
-│   │   ├── autocmds.lua       # 自动命令：复制高亮、恢复光标、q 关辅助窗口
-│   │   └── lazy.lua           # 引导并启动插件管理器 lazy.nvim
-│   └── plugins/               # 插件声明，每个文件返回一张 spec 表，自动全部导入
-│       ├── colorscheme.lua    # 配色：tokyonight（storm 风格）
-│       ├── icons.lua          # 图标库：mini.icons，供其他插件调用
-│       ├── lualine.lua        # 状态栏：lualine
-│       ├── barbar.lua         # 顶部 buffer 栏：barbar
-│       ├── indent.lua         # 缩进参考线：indent-blankline
-│       ├── rainbow.lua        # 彩虹括号：rainbow-delimiters
-│       ├── colorizer.lua      # 颜色代码高亮：nvim-colorizer
-│       ├── alpha.lua          # 起始页：alpha-nvim
-│       ├── treesitter.lua     # 语法解析：nvim-treesitter（高亮的底座）
-│       ├── lsp.lua            # 语言服务器：mason + mason-lspconfig + nvim-lspconfig
-│       ├── lazydev.lua        # 让 lua_ls 认识 vim.* 这些 Neovim API：lazydev
-│       ├── cmp.lua            # 自动补全 + Snippet：blink.cmp + friendly-snippets
-│       ├── conform.lua        # 格式化：conform.nvim
-│       ├── lint.lua           # 独立 linter（补语言服务器不管的）：nvim-lint
-│       ├── neotree.lua        # 文件树：neo-tree
-│       ├── fzf.lua            # 模糊查找：fzf-lua
-│       ├── grug-far.lua       # 全项目搜索替换：grug-far
-│       ├── todo.lua           # 待办注释高亮：todo-comments
-│       ├── flash.lua          # 光标快速跳转：flash
-│       ├── autopairs.lua      # 括号引号自动配对：nvim-autopairs
-│       ├── surround.lua       # 环绕符号的增删改：nvim-surround
-│       ├── mini-ai.lua        # 文本对象增强：mini.ai
-│       ├── ts-textobjects.lua # 按语法跳转 / 交换参数：nvim-treesitter-textobjects
-│       ├── autotag.lua        # HTML 标签自动闭合与联动改名：nvim-ts-autotag
-│       ├── splitjoin.lua      # 参数列表拆行 / 合行：mini.splitjoin
-│       ├── align.lua          # 按分隔符对齐：mini.align
-│       ├── gitsigns.lua       # Git 改动标记与 hunk 操作：gitsigns
-│       ├── toggleterm.lua     # 终端 + lazygit 浮窗：toggleterm
-│       └── whichkey.lua       # 按键提示：which-key
+│   ├── config/                 # 核心原生配置（不依赖任何插件）
+│   │   ├── options.lua         # 选项：行号、缩进、搜索、剪贴板、持久化、折叠、消息界面…
+│   │   ├── keymaps.lua         # 全局按键映射
+│   │   ├── autocmds.lua        # 自动命令：复制高亮、恢复光标、q 关辅助窗口
+│   │   └── lazy.lua            # 引导并启动插件管理器 lazy.nvim
+│   └── plugins/                # 插件声明，每个文件返回一张 spec 表，自动全部导入
+│       ├── colorscheme.lua     # 配色：tokyonight（storm 风格）
+│       ├── icons.lua           # 图标库：mini.icons，供其他插件调用
+│       ├── lualine.lua         # 状态栏：lualine
+│       ├── barbar.lua          # 顶部 buffer 栏：barbar
+│       ├── indent.lua          # 缩进参考线：indent-blankline
+│       ├── rainbow.lua         # 彩虹括号：rainbow-delimiters
+│       ├── colorizer.lua       # 颜色代码高亮：nvim-colorizer
+│       ├── alpha.lua           # 起始页：alpha-nvim
+│       ├── treesitter.lua      # 语法解析：nvim-treesitter（高亮的底座）
+│       ├── lsp.lua             # 语言服务器：mason + mason-lspconfig + nvim-lspconfig
+│       ├── lazydev.lua         # 让 lua_ls 认识 vim.* 这些 Neovim API：lazydev
+│       ├── cmp.lua             # 自动补全 + Snippet：blink.cmp + friendly-snippets
+│       ├── conform.lua         # 格式化：conform.nvim
+│       ├── lint.lua            # 独立 linter（补语言服务器不管的）：nvim-lint
+│       ├── neotree.lua         # 文件树：neo-tree
+│       ├── fzf.lua             # 模糊查找：fzf-lua
+│       ├── grug-far.lua        # 全项目搜索替换：grug-far
+│       ├── todo.lua            # 待办注释高亮：todo-comments
+│       ├── flash.lua           # 光标快速跳转：flash
+│       ├── autopairs.lua       # 括号引号自动配对：nvim-autopairs
+│       ├── surround.lua        # 环绕符号的增删改：nvim-surround
+│       ├── mini-ai.lua         # 文本对象增强：mini.ai
+│       ├── ts-textobjects.lua  # 按语法跳转 / 交换参数：nvim-treesitter-textobjects
+│       ├── autotag.lua         # HTML 标签自动闭合与联动改名：nvim-ts-autotag
+│       ├── splitjoin.lua       # 参数列表拆行 / 合行：mini.splitjoin
+│       ├── align.lua           # 按分隔符对齐：mini.align
+│       ├── gitsigns.lua        # Git 改动标记与 hunk 操作：gitsigns
+│       ├── toggleterm.lua      # 终端 + lazygit 浮窗：toggleterm
+│       ├── trouble.lua         # 诊断与列表面板：trouble
+│       ├── persisted.lua       # 会话恢复：persisted
+│       ├── render-markdown.lua # Markdown 就地渲染：render-markdown
+│       └── whichkey.lua        # 按键提示：which-key
 ├── docs/
-│   ├── notes.md               # 收件箱：随手记，定期清空归档到下面两个文件
-│   ├── cheatsheet.md          # 操作技巧速查（怎么用 Vim）
-│   └── lua-api.md             # 配置机制与 Lua API（怎么写配置）
-└── logs/                      # 临时调试日志，不进 git
+│   ├── notes.md                # 收件箱：随手记，定期清空归档到下面两个文件
+│   ├── cheatsheet.md           # 操作技巧速查（怎么用 Vim）
+│   └── lua-api.md              # 配置机制与 Lua API（怎么写配置）
+└── logs/                       # 临时调试日志，不进 git
 ```
 
 插件本体装在 `~/.local/share/nvim/lazy/`，是下载来的产物，不进这个仓库。
@@ -151,6 +154,8 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `<leader>c…` | **c**ode，代码相关；目前只有 `<leader>cf` 格式化 |
 | `<leader>g…` | **g**it：改动的暂存 / 回滚 / 预览 / blame，以及 lazygit |
 | `<leader>t…` | **t**erminal，终端：浮窗 / 底部 / 侧边 |
+| `<leader>x…` | 诊断列表面板：诊断 / 大纲 / 引用 / quickfix（trouble） |
+| `<leader>q…` | 会话：恢复上次开着的那些文件和窗口布局（persisted） |
 | `<leader>a` `<leader>A` | **a**rgument，当前参数和后一个 / 前一个对调位置 |
 | `<leader>y` `<leader>p` | 系统剪贴板复制 / 粘贴（普通寄存器保持独立） |
 | `<leader>?` | 列出当前缓冲区里所有可用按键 |
@@ -233,6 +238,26 @@ leader 键是**空格**。按下空格停顿一下，which-key 会把下一层�
 | `]d` `[d` | 下一条 / 上一条诊断（Neovim 内置） |
 | `]D` `[D` | 本文件最后一条 / 第一条诊断（Neovim 内置） |
 | `<C-w>d` | 浮窗显示光标所在行的诊断全文，消息太长被截断时用（Neovim 内置） |
+| `<leader>xx` `<leader>xX` | 面板列出全项目 / 当前文件的诊断（trouble） |
+| `<leader>xs` | 当前文件的符号大纲，会跟着光标走（trouble） |
+| `<leader>xl` | 光标下这个符号的定义 / 引用 / 实现（trouble） |
+| `<leader>xq` `<leader>xL` | quickfix / location list 改用同一个面板显示（trouble） |
+
+上面三种诊断入口的分工：`]d` `[d` 逐条改最快，`<leader>xx` 适合先看总量，
+`gO` 是不会自己刷新的一次性快照。面板里按 `?` 列出它自己的全部按键。
+
+会话（persisted，把「当时开着哪些文件、窗口怎么分」存下来，一个目录一份）：
+
+| 按键 | 用途 |
+| --- | --- |
+| `<leader>qs` | 恢复当前目录的会话 |
+| `<leader>ql` | 恢复最近保存的那一个（不限目录） |
+| `<leader>qS` | 列出所有会话挑一个；选别的目录会连 cwd 一起切过去 |
+| `<leader>qd` | 本次退出不保存 |
+
+保存是自动的（退出时写盘），恢复要手动按键 —— 启动照常停在起始页。
+**带文件名启动（`nvim a.lua`）时不记录会话**，这是插件的设计，
+要记就手动 `:Persisted start`。
 
 补全菜单（blink.cmp，用的是它的 `default` 预设 —— 全部是 `Ctrl` 组合键，
 不占用 `<CR>` 和 `<Tab>`，所以打字节奏完全不受影响）：
@@ -324,6 +349,18 @@ Git 与终端：
 :Gitsigns show ~1         " 打开某个版本的这个文件（只读）
 :4ToggleTerm              " 开第 4 个终端；direction=float/horizontal/vertical 指定形态
 :TermExec cmd="make test" " 把命令送进终端里执行
+```
+
+面板、会话与 Markdown：
+
+```vim
+:Trouble diagnostics toggle   " 写法是 :Trouble {模式} {动作} {选项=值}，带补全
+:Trouble symbols toggle win.position=right   " 临时改这一次的面板位置
+:Persisted save 名字        " 存一份带名字的会话（不带名字就按当前目录存）
+:Persisted delete           " 列出会话，挑一个删掉
+:Persisted clean            " 清掉那些目录已经不存在了的会话文件
+:RenderMarkdown toggle      " 临时关掉 Markdown 渲染，看原始文本
+:checkhealth render-markdown " 解析器和可选的 LaTeX 转换命令齐不齐
 ```
 
 ## 约定

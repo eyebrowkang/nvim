@@ -176,7 +176,7 @@ diff /tmp/clean.txt /tmp/mine.txt
 
 ---
 
-## lazy.nvim 写 spec 时的七个坑
+## lazy.nvim 写 spec 时的八个坑
 
 ### 1. 懒加载用哪个事件，取决于插件靠哪个事件工作
 
@@ -296,6 +296,28 @@ end,
 验证办法（真实终端里，不能用 headless）：启动后直接
 `:lua vim.ui.select({"a","b"}, {}, function() end)`，
 弹出来的是 fzf 的窗口而不是命令行里的数字列表，就说明桥搭通了。
+
+### 8. 有的插件会反过来读 lazy 的 spec
+
+`ft` 这类字段名义上只归 lazy.nvim 管（决定什么时候加载），
+但插件是能读到它的 —— lazy.nvim 把整份 spec 存在 `require("lazy.core.config").plugins`
+里，插件在自己的 `setup()` 里去查就行。
+
+render-markdown 就是这么做的：用户没写 `file_types` 时，它拿 spec 里的 `ft` 当默认值。
+好处是「哪些文件类型加载」和「哪些文件类型生效」自动保持一致，只用写一处。
+
+代价是这两处一旦都写了、又写得不一样，就会出现「插件明明加载了却什么都不做」：
+
+```lua
+ft = { "markdown" },                    -- 只在 markdown 文件加载
+opts = { file_types = { "quarto" } },   -- 但只对 quarto 生效 → 永远不生效
+```
+
+判断一个插件有没有这种行为，去它源码里搜 `lazy.core.config`：
+
+```bash
+grep -rn "lazy.core.config" ~/.local/share/nvim/lazy/<插件名>/lua/
+```
 
 ### 附：`keys` 和 `lazy = false` 可以同时写
 

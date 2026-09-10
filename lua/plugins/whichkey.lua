@@ -32,8 +32,10 @@ return {
         { "<leader>c", group = "代码" },
         { "<leader>f", group = "查找" },
         { "<leader>g", group = "git" },
+        { "<leader>q", group = "会话" },
         { "<leader>s", group = "搜索替换" },
         { "<leader>t", group = "终端" },
+        { "<leader>x", group = "诊断列表" },
         -- <leader>y / <leader>p 这类单键映射不需要分组，它们本身就是完整映射。
       },
 

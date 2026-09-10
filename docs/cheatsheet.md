@@ -300,6 +300,31 @@ Neovim 0.11 / 0.12 把很多以前要装插件才有的能力做进了内核。
 - **这套界面标着 experimental**，Neovim 升级后可能改行为。
   觉得不对劲就把第 11 节整段注释掉，会回到原来的底部命令行。
 
+### 会话（`:mksession`）
+
+会话是 Vim 自带的能力，不需要插件：
+
+```vim
+:mksession ~/a.vim    " 把当前的窗口布局、打开的文件、光标位置写成一个脚本
+:mksession! ~/a.vim   " 同上，允许覆盖已有文件
+:source ~/a.vim       " 复原
+nvim -S ~/a.vim       " 启动时直接复原
+```
+
+写进去多少东西由 `sessionoptions` 决定，`:set sessionoptions?` 看当前值。
+0.12 的默认值是 `blank,buffers,curdir,folds,help,tabpages,winsize,terminal`。
+几个值得知道的值：
+
+| 值 | 含义 |
+| --- | --- |
+| `curdir` | 记住当前工作目录，复原时 `cd` 回去 |
+| `folds` | 记住手动折叠的状态 |
+| `globals` | 记住 `g:` 开头的全局变量（有些插件靠它存自己的状态） |
+| `options` | 记住所有选项和映射 —— **默认没开是对的**，开了会把当时的选项按死在会话里 |
+
+插件（本配置用 persisted）加的是「存到哪、什么时候存、怎么找回来」这一层，
+底下调的还是 `:mksession`。所以会话文件是纯文本，可以直接打开看写了什么。
+
 ### 其他
 
 | 按键 | 作用 |
