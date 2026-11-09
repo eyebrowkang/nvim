@@ -76,4 +76,13 @@ require("lazy").setup({
   -- 目前没有插件需要它，留着只会让 :checkhealth lazy 一直报缺 luarocks。
   -- 以后真装了需要 luarocks 的插件，把这行删掉即可。
   rocks = { enabled = false },
+
+  -- 本地插件开发目录。spec 写 dev = true 的插件优先从这里的同名子目录加载，
+  -- 方便修改源码后重启 Neovim 直接验证，不必重新 clone 或发布。
+  dev = {
+    path = vim.fn.expand("~/Projects/neovim-development"),
+
+    -- 本地仓库不存在时回退到 spec 声明的远程仓库，日常使用仍有可复现的版本。
+    fallback = true,
+  },
 })

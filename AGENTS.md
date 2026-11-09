@@ -144,7 +144,8 @@ Keep cross-file dependency comments synchronized with behavior.
 - `docs/notes.md` is an inbox. Archive usage tips to `docs/cheatsheet.md`,
   config/API mechanics to `docs/lua-api.md`, and large topics to `docs/*.md`.
 - If platform branching is unavoidable, detect it explicitly and explain why.
-- Keep `exrc` disabled; do not assume `.nvim.lua` runs.
+- Keep `exrc` enabled for trusted project `.nvim.lua` files. Inspect and `:trust` each file;
+  do not assume an untrusted or modified file runs.
 - `stylua.toml` controls Lua formatting; do not add `.editorconfig` for Lua.
 
 ## Generated and runtime state

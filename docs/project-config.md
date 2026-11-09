@@ -172,6 +172,28 @@ vim.o.exrc = false
 顺序就是这个顺序。实践上只用 `.nvim.lua`，另外两个是 Vimscript 的，
 没有理由再碰。
 
+### 例：给 Ansible Vault 的懒加载插件传项目配置
+
+[ansible-vault.nvim](../lua/plugins/ansible-vault.lua) 由 `VeryLazy` 在项目级
+`.nvim.lua` 执行后加载，所以 `.nvim.lua` 执行时它还没有运行 `setup()`。不能直接
+`require("ansible-vault").setup(...)`，而要先写它约定读取的全局变量：
+
+```lua
+-- <项目根目录>/.nvim.lua
+-- 凭据文件放在用户目录；这个项目文件只声明选择哪个 Vault ID，不含密码。
+vim.g.ansible_vault_config = {
+  vault_ids = {
+    "dev@~/.config/ansible/my-project/dev-vault-pass",
+    "prod@~/.config/ansible/my-project/prod-vault-pass",
+  },
+  encrypt_vault_id = "prod",
+}
+```
+
+启动完成后 `VeryLazy` 触发时，lazy.nvim 加载插件并读取这张表。若项目只用一个
+密码文件，改为 `password_files = "~/.config/ansible/my-project/vault-pass"` 即可；
+不要把密码或密码文件本身提交到仓库。
+
 ### 要不要进 git
 
 进 —— 项目级配置本来就该团队共享。但要知道两件事：
@@ -239,9 +261,9 @@ return {
 - **第 1 层在用**：`stylua.toml`。
 - **第 2 层随时可用**：`.editorconfig` 是 Neovim 内置默认开的，
   往任意项目里丢一个就生效，本仓库自己没有这个文件。
-- **`exrc` 没有开**：`lua/config/options.lua` 里没设它，保持默认的 off。
-  需要项目级 Lua 配置时，在 options.lua 里加一行 `vim.o.exrc = true`，
-  然后按上面的信任流程走。
+- **`exrc` 已开启**：`lua/config/options.lua` 会执行当前目录向上找到的项目配置。
+  首次遇到 `.nvim.lua`、或它的内容变更后，必须先查看内容并在该缓冲区执行
+  `:trust`；未信任的项目代码不会运行。
 
 ## 自己验证的办法
 
