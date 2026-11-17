@@ -35,6 +35,7 @@
 | `lazygit` | `<leader>gg` 的 git 操作界面 | 按 `<leader>gg` 弹一条提示，别的不受影响 |
 | `ansible` | ansible-language-server 靠它列出模块清单 | Ansible 文件补全里没有模块名、`K` 也查不到说明 |
 | `ansible-lint` | 同上，它是服务器的检查后端 | Ansible 文件没有诊断，其余功能照常 |
+| `terraform` | conform 调 `terraform fmt` 格式化 `.tf` / `.tfvars` | Terraform 文件保存时不格式化，补全照常 |
 
 「按语法」的那些功能都建立在解析器之上：某个语言没装解析器时，
 它的文件里 `am` / `ic` / `i=` / `]m` / `S` 会不生效，其余按键照常。
@@ -46,7 +47,7 @@ mason 会把 [lua/plugins/lsp.lua](lua/plugins/lsp.lua) 里 `ensure_installed` �
 但**格式化器和 linter 不是语言服务器，`ensure_installed` 管不着**，要手动装一次：
 
 ```vim
-:MasonInstall stylua prettierd markdownlint-cli2 ansible-lint
+:MasonInstall stylua prettierd markdownlint-cli2 ansible-lint terraform
 ```
 
 `ansible-lint` 会连 `ansible-core` 一起装进 mason 自己的虚拟环境，但 mason 只把
@@ -429,6 +430,46 @@ Neovim 自带的 `syntax/jinja.vim` 本来就是设计成叠在别的语法之�
 `<leader>cf` 对 Ansible 的 YAML 和 Jinja 模板都**刻意不做事**：
 前者的排版规矩归 `ansible-lint` 管，两套规则打架只会让警告变多；
 后者根本不是合法的底层语言，prettier 连解析都过不去。
+
+## Terraform
+
+`.tf` 文件被固定识别为 `terraform`，`.tfvars` 是 `terraform-vars`
+（见 [lua/config/filetype.lua](lua/config/filetype.lua) 第 3 节）。
+内置规则会读文件内容来区分 Terraform 和 TinyFugue 脚本，
+新建的空 `main.tf` 会被误判成后者，什么功能都挂不上。
+
+两种文件都由 terraform-ls 提供补全、`K` 文档和跳转，
+并且是**全配置里唯一保存时自动格式化**的语言（`terraform fmt`）：
+它只有一套官方风格、没有可调选项，不会和别人项目的规矩冲突。
+其余语言照旧只在按 `<leader>cf` 时格式化。
+
+resource / data 的类型名补全来自 provider 的 schema：
+`required_providers` 里写了的 provider，不 init 也能补出类型名；
+参数和文档要在项目里跑过 `terraform init` 才完整。补全不对时自查：
+
+```vim
+:lua =vim.bo.filetype                            " 应为 terraform
+:lua =vim.lsp.get_clients({ bufnr = 0 })[1].name " 应为 terraformls
+:ConformInfo                                     " terraform_fmt 应为 ready
+```
+
+## SOPS 加密文件
+
+不装插件，直接用 `sops edit secrets.enc.yaml`：sops 解密到临时文件、
+用 `$EDITOR` 打开，保存退出后自动加密写回。
+
+Neovim 这边要防的是**明文残留**：本配置开着 swap 和 undofile，
+还有 shada 记录寄存器和历史，sops 删掉临时文件后这些还在磁盘上。
+[lua/config/autocmds.lua](lua/config/autocmds.lua) 第 5 节按路径
+（`$TMPDIR/<数字>/<文件名>`）认出 sops 的临时文件，打开前就关掉
+这个缓冲区的 swap 和 undofile，并让这个 nvim 进程不写 shada。
+自查：在 `sops edit` 打开的缓冲区里执行
+
+```vim
+:lua =vim.bo.swapfile, vim.bo.undofile, vim.o.shada " 应为 false false ""
+```
+
+管不到的：复制到系统剪贴板、写到别的文件、终端回滚里看到的明文。
 
 ## 插件常用命令
 

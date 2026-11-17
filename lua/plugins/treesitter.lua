@@ -69,6 +69,13 @@ return {
         "typescript",
         "tsx",
 
+        -- 基础设施即代码
+        -- terraform 解析器是 hcl 的一个方言，依赖 hcl；两个都写上意思更清楚，
+        -- 而且 .terraform.lock.hcl 这类纯 HCL 文件用的就是 hcl。
+        -- .tfvars（文件类型 terraform-vars）nvim-treesitter 已经映射到 terraform。
+        "hcl",
+        "terraform",
+
         -- 其他常用
         "c",
         "python",

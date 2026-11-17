@@ -135,6 +135,14 @@ return {
         -- 补全模块名和参数、悬浮显示模块文档（K），检查由它调用 ansible-lint 完成。
         "ansiblels",
 
+        -- Terraform：terraform-ls，HashiCorp 官方的服务器。
+        -- 管 terraform（.tf）和 terraform-vars（.tfvars）两种文件类型。
+        -- 补全 resource / data 的类型名和参数、K 显示 provider 文档、跳转到
+        -- 变量和模块的定义。provider 的 schema 要先在项目里跑过 terraform init
+        -- 才拿得到，没 init 时只有 Terraform 语言本身的关键字。
+        -- 格式化不走它，由 conform.lua 直接调 terraform fmt。
+        "terraformls",
+
         -- Python：两个服务器分工，见下面的说明
         "basedpyright",
         "ruff",

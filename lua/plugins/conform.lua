@@ -9,10 +9,11 @@
 -- 按键：
 --   <leader>cf   格式化。普通模式格式化整个文件，可视模式只格式化选中的部分。
 --
--- 保存时不自动格式化。开了当然省事，但代价是「保存」这个动作会改动你没打算改的行 ——
+-- 保存时默认不自动格式化。开了当然省事，但代价是「保存」这个动作会改动你没打算改的行 ——
 -- 在别人的项目里尤其麻烦，一次保存可能顺手重排几百行，git diff 全是噪音。
--- 想开的话，在下面 opts 里加：
---   format_on_save = { timeout_ms = 500, lsp_format = "fallback" },
+-- 唯一的例外是 Terraform：terraform fmt 只有一套官方风格、没有任何可调选项，
+-- 社区项目几乎都在 CI 里跑 terraform fmt -check，不存在「别人的规矩和我不一样」，
+-- 所以保存即格式化只有好处。白名单见下面的 format_on_save。
 --
 -- ⚠ 格式化器是外部命令，conform 只负责调用，不负责安装。用 mason 装：
 --     :MasonInstall stylua prettierd
@@ -23,9 +24,13 @@ return {
   {
     "stevearc/conform.nvim",
 
-    -- 两个触发点：手动敲 :ConformInfo 时，或者按下面 keys 里的按键时。
-    -- 平时不加载，因为不格式化就完全用不到它。
+    -- 三个触发点：手动敲 :ConformInfo、按下面 keys 里的按键，或者第一次保存文件。
+    -- 最后一个是给 format_on_save 用的：conform 靠自己注册的 BufWritePre 自动命令
+    -- 在写盘前格式化，插件没加载就没有这条自动命令。lazy.nvim 拦下第一次
+    -- BufWritePre、加载插件后会把这个事件重放一遍，所以第一次保存也能格式化上。
+    -- 代价是任何文件第一次保存时都会加载 conform，它很轻，可以忽略。
     cmd = "ConformInfo",
+    event = "BufWritePre",
 
     keys = {
       {
@@ -47,6 +52,17 @@ return {
       -- 装了语言服务器的语言至少有个能用的格式化，不用每种都在下面列一遍。
       default_format_opts = { lsp_format = "fallback" },
 
+      -- 保存时格式化的白名单。写成函数是因为 conform 对每个缓冲区都会问一次：
+      -- 返回选项表就格式化，返回 nil 就跳过。只有下面列出的文件类型返回选项表。
+      -- timeout_ms：保存时的格式化是同步的（必须等结果出来才能写盘），
+      -- terraform fmt 通常几十毫秒就返回，给 1 秒是留余量；超时就放弃格式化、照常保存。
+      format_on_save = function(bufnr)
+        local enabled = { terraform = true, ["terraform-vars"] = true }
+        if enabled[vim.bo[bufnr].filetype] then
+          return { timeout_ms = 1000 }
+        end
+      end,
+
       -- 哪种文件用哪个格式化器。值是一个列表，默认「全部依次跑一遍」，
       -- 前一个的输出是后一个的输入 —— 所以 python 那行是先修 import 再排版。
       formatters_by_ft = {
@@ -67,6 +83,13 @@ return {
 
         -- TOML：taplo 既是语言服务器也是格式化器，同一个二进制。
         toml = { "taplo" },
+
+        -- Terraform：terraform fmt，从标准输入读、往标准输出写，不碰磁盘上的文件。
+        -- 用的是 mason 装的 terraform 二进制（mason 的 bin 目录在 PATH 上）。
+        -- .tfvars 也是 HCL 语法，同一个命令照样能排。
+        -- 不用 terraform-ls 的格式化：它内部也是调 terraform fmt，多绕一层而已。
+        terraform = { "terraform_fmt" },
+        ["terraform-vars"] = { "terraform_fmt" },
 
         -- 下面这些都归 prettier 管。它是前端圈的通用格式化器，一个工具吃很多种格式。
         -- 两个名字的区别：

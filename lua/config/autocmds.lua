@@ -149,3 +149,61 @@ autocmd("LspDetach", {
     vim.api.nvim_clear_autocmds({ group = lsp_hl_cursor, buffer = args.buf })
   end,
 })
+
+-- ====================================================================
+-- 5. sops edit 的临时文件：不留明文痕迹
+-- ====================================================================
+-- `sops edit secrets.enc.yaml` 的流程是：把内容解密到一个临时文件，
+-- 用 $EDITOR 打开它，编辑器退出后重新加密写回原文件，再删掉临时文件。
+-- sops 只管删它自己的临时文件，管不着 Neovim 另外写到别处的东西。
+-- 本配置默认会在三个地方留下明文：
+--   swap      编辑期间持续写进 ~/.local/state/nvim/swap/，崩溃后残留
+--   undofile  每次 :w 把整棵撤销树写进 ~/.local/state/nvim/undo/，永不删除
+--   shada     复制/删除过的寄存器内容、搜索和命令历史，退出时写盘
+-- 所以识别出这类缓冲区后，把这三样关掉。
+--
+-- 识别靠路径。sops 没有设置任何环境变量可供判断，但临时文件的位置很固定：
+-- `<临时目录>/<一串数字>/<原文件名>`，比如 /tmp/1434508211/secrets.enc.yaml。
+-- 那串数字是 Go 的 os.MkdirTemp 生成的随机目录名（权限 700）。
+-- 临时目录 sops 取的是 $TMPDIR，没有就是 /tmp；vim.uv.os_tmpdir() 的取法一致。
+-- 误判的代价只是某个文件没有 swap 和撤销历史，所以宁可宽一点。
+--
+-- 不需要额外处理的：
+--   backup       options.lua 第 6 节已经关掉
+--   会话记录     sops 带文件名启动 nvim，persisted.nvim 本来就不记（见 persisted.lua）
+--   语言服务器   yamlls 是本机进程，内容只在内存里流转
+-- 管不到的：你自己把内容复制到系统剪贴板、写进别的文件，或者终端回滚里看到的明文。
+local function is_sops_tempfile(path)
+  local tmpdir = vim.uv.os_tmpdir()
+  if not tmpdir then
+    return false
+  end
+  -- macOS 的 $TMPDIR 在 /var/folders/... 下，而 /var 是 /private/var 的软链接。
+  -- 两种写法都可能出现在缓冲区名里，所以两个都比一下。
+  for _, dir in ipairs({ tmpdir, vim.fn.resolve(tmpdir) }) do
+    dir = vim.fs.normalize(dir)
+    -- 用 plain 比较前缀，避免临时目录里的 . - 之类字符被当成 Lua 模式符号。
+    if vim.startswith(path, dir .. "/") and path:sub(#dir + 2):match("^%d+/[^/]+$") then
+      return true
+    end
+  end
+  return false
+end
+
+-- 必须是 BufReadPre：这时文件内容还没读进来，swap 文件也还没写出任何内容。
+-- 等到 BufReadPost 再关，明文可能已经进过一次 swap。
+autocmd("BufReadPre", {
+  group = augroup("SopsTempfile", { clear = true }),
+  callback = function(args)
+    if not is_sops_tempfile(vim.fs.normalize(vim.api.nvim_buf_get_name(args.buf))) then
+      return
+    end
+    -- 这两个是缓冲区局部选项，只影响这个文件。
+    vim.bo[args.buf].swapfile = false
+    vim.bo[args.buf].undofile = false
+    -- shada 是全局选项，没法只排除一个文件，只能整个进程都不写。
+    -- 可以接受：sops edit 会为这个文件单独启动一个 nvim，退出就结束，
+    -- 代价只是这一次会话的历史和寄存器不保存。
+    vim.o.shada = ""
+  end,
+})

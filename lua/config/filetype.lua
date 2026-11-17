@@ -134,3 +134,21 @@ vim.filetype.add({
 -- 没有为 jinja 装 treesitter 解析器：nvim-treesitter 的支持列表里
 -- jinja 和 jinja_inline 两个都标着 unstable，而且要两个一起装才是完整高亮。
 -- 上面那套复合类型走的是自带的正则语法文件，够用且稳定。
+
+-- ====================================================================
+-- 3. Terraform（.tf）
+-- ====================================================================
+-- 内置规则里 .tf 是有歧义的扩展名：它同时是 TinyFugue（一个 MUD 客户端）
+-- 的脚本后缀。内置的判断办法是读文件内容 —— 只要有一行不是空行、
+-- 也不以 ; 或 / 开头，就认作 terraform，否则认作 tf。
+-- 问题出在新建文件上：空文件或只写了注释的 main.tf 会被判成 tf，
+-- terraformls 不挂、treesitter 不开、保存也不格式化。
+-- 这台机器上不会有 TinyFugue 脚本，所以直接把 .tf 钉死为 terraform。
+--
+-- .tfvars 内置已经认成 terraform-vars，不用管；
+-- .terraform.lock.hcl 认成 hcl，那是 terraform 自己生成的文件，也不用管。
+vim.filetype.add({
+  extension = {
+    tf = "terraform",
+  },
+})

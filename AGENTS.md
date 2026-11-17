@@ -25,7 +25,7 @@ Read local sources before external tutorials:
 :Lazy restore
 :Lazy sync
 :TSUpdate
-:MasonInstall stylua prettierd markdownlint-cli2 ansible-lint
+:MasonInstall stylua prettierd markdownlint-cli2 ansible-lint terraform
 ```
 
 - `lua/plugins/lsp.lua`'s `ensure_installed` manages language servers only;
