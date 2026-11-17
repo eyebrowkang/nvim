@@ -135,6 +135,7 @@ sudo apt install ripgrep fzf build-essential python3-venv python3-pip
 │   ├── notes.md                # 收件箱：随手记，定期清空归档到下面两个文件
 │   ├── cheatsheet.md           # 操作技巧速查（怎么用 Vim）
 │   ├── lua-api.md              # 配置机制与 Lua API（怎么写配置）
+│   ├── clipboard-ssh.md        # 专题：SSH、tmux 与系统剪贴板
 │   └── project-config.md       # 专题：给单个项目做专属配置
 └── logs/                       # 临时调试日志，不进 git
 ```
@@ -145,6 +146,9 @@ sudo apt install ripgrep fzf build-essential python3-venv python3-pip
 [project-config.md](docs/project-config.md) 讲怎么给单个项目做专属配置 ——
 不同项目不同缩进、项目专属的语言服务器设置、项目专属的映射，
 相当于 VSCode 的 workspace settings。
+
+[clipboard-ssh.md](docs/clipboard-ssh.md) 讲远端 Neovim 如何通过 tmux 和 OSC 52
+复制到本机剪贴板，以及 Mac SSH 到另一台 Mac 时为什么需要覆盖默认后端。
 
 ## 加载顺序
 
